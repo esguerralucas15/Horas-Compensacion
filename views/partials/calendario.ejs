@@ -1,0 +1,20 @@
+<%# Recibe: calendario, diasMarcados (array de fechas ISO) %>
+<div class="card calendario">
+  <p class="calendario__mes"><%= calendario.mes.toUpperCase() %></p>
+  <p class="calendario__anio"><%= calendario.anio %></p>
+  <table class="calendario__tabla">
+    <thead>
+      <tr><% ['D','L','M','M','J','V','S'].forEach(d => { %><th><%= d %></th><% }) %></tr>
+    </thead>
+    <tbody>
+      <% calendario.semanas.forEach(semana => { %>
+        <tr>
+          <% semana.forEach(d => { %>
+            <td class="<%= d.delMes ? '' : 'is-fuera' %> <%= diasMarcados.includes(d.iso) ? 'is-compensado' : '' %>"
+                <% if (diasMarcados.includes(d.iso)) { %>title="Día compensado"<% } %>><%= d.dia %></td>
+          <% }) %>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

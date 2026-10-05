@@ -1,0 +1,23 @@
+<%- include('../partials/head') %>
+<body class="pantalla">
+  <main class="pantalla__contenido">
+    <h1 class="pantalla__titulo">Inicio de Compensación</h1>
+    <% if (yaRegistrada) { %>
+      <p class="pantalla__texto">Ya registraste tu hora de compensación del día de hoy. Podrás registrar una nueva hora mañana.</p>
+      <a href="/usuario/dashboard" class="btn btn--primario">Volver</a>
+    <% } else { %>
+      <% if (tipo === 'sabado') { %>
+        <p class="pantalla__texto">Estás a punto de registrar una jornada laboral de compensación para tu periodo de descanso de <%= periodo %>. Al hacer clic en 'Iniciar', comenzará a correr el tiempo correspondiente al día de hoy (8 horas). Una vez transcurrida la jornada de trabajo, recuerda hacer clic en 'Finalizar compensación' para que el registro se guarde y tu jefe de área sea notificado automáticamente.</p>
+      <% } else { %>
+        <p class="pantalla__texto">Estás a punto de registrar una hora de compensación para tu periodo de descanso de <%= periodo %>. Al hacer clic en 'Iniciar', comenzará a correr el tiempo correspondiente al día de hoy. Una vez transcurrida la hora, recuerda hacer clic en 'Finalizar compensación' para que el registro se guarde y tu jefe de área sea notificado automáticamente.</p>
+      <% } %>
+      <form action="/usuario/compensacion/iniciar" method="POST">
+        <input type="hidden" name="tipo" value="<%= tipo %>">
+        <input type="hidden" name="fecha" value="<%= fecha %>">
+        <button type="submit" class="btn btn--primario">Iniciar</button>
+      </form>
+      <a href="<%= tipo === 'sabado' ? '/usuario/sabados' : '/usuario/dashboard' %>" class="pantalla__volver">Cancelar</a>
+    <% } %>
+  </main>
+</body>
+</html>

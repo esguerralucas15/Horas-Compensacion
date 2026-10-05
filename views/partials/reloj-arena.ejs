@@ -1,0 +1,50 @@
+<%#
+  Reloj de arena animado (SVG + SMIL). Ciclo de "ciclo" segundos:
+    0%–82%  la arena cae del bulbo superior al inferior
+    82%–100% el reloj gira 180°; al reiniciar, el estado girado es idéntico al inicial
+  public/js/temporizador.js lo detiene cuando se consume el tiempo.
+%>
+<% const d = ciclo + 's'; %>
+<svg class="reloj" id="relojArena" data-ciclo="<%= ciclo %>" viewBox="0 0 520 700" role="img" aria-label="Reloj de arena">
+  <defs>
+    <clipPath id="arenaArriba">
+      <rect x="0" y="105" width="520" height="240">
+        <animate attributeName="y" values="105;336;336" keyTimes="0;0.82;1" dur="<%= d %>" repeatCount="indefinite" />
+      </rect>
+    </clipPath>
+    <clipPath id="arenaAbajo">
+      <!-- Montículo: la superficie sube con un pico en el centro, donde cae el chorro -->
+      <path d="M0 45C150 45 220 0 260 0C300 0 370 45 520 45V400H0Z">
+        <animateTransform attributeName="transform" type="translate"
+          values="0 586;0 300;0 300" keyTimes="0;0.82;1" dur="<%= d %>" repeatCount="indefinite" />
+      </path>
+    </clipPath>
+  </defs>
+
+  <g>
+    <animateTransform attributeName="transform" type="rotate"
+      values="0 260 345;0 260 345;180 260 345" keyTimes="0;0.82;1"
+      calcMode="spline" keySplines="0 0 1 1;0.45 0 0.25 1"
+      dur="<%= d %>" repeatCount="indefinite" />
+
+    <!-- Arena -->
+    <g class="reloj__arena">
+      <path clip-path="url(#arenaArriba)"
+        d="M130 105H390V165C390 235 345 268 300 300C280 315 268 325 262 335H258C252 325 240 315 220 300C175 268 130 235 130 165Z" />
+      <path clip-path="url(#arenaAbajo)"
+        d="M130 585H390V525C390 455 345 422 300 390C280 375 268 365 262 355H258C252 365 240 375 220 390C175 422 130 455 130 525Z" />
+      <line class="reloj__chorro" x1="260" y1="338" x2="260" y2="584" stroke-width="11" stroke-linecap="round" stroke-dasharray="0.1 27.5">
+        <animate attributeName="stroke-dashoffset" values="0;-27.6" dur="0.45s" repeatCount="indefinite" />
+        <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.8;0.81;1" dur="<%= d %>" repeatCount="indefinite" />
+      </line>
+    </g>
+
+    <!-- Vidrio -->
+    <g class="reloj__marco" fill="none" stroke-width="34" stroke-linejoin="round">
+      <path d="M95 60V165C95 245 150 280 200 315C225 333 225 357 200 375C150 410 95 445 95 525V630" />
+      <path d="M425 60V165C425 245 370 280 320 315C295 333 295 357 320 375C370 410 425 445 425 525V630" />
+    </g>
+    <rect class="reloj__base" x="40" y="25" width="440" height="52" rx="26" />
+    <rect class="reloj__base" x="40" y="613" width="440" height="52" rx="26" />
+  </g>
+</svg>

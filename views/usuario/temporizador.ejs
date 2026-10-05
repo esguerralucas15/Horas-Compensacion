@@ -1,0 +1,13 @@
+<%- include('../partials/head') %>
+<body class="pantalla pantalla--temporizador">
+  <main class="pantalla__contenido">
+    <%- include('../partials/reloj-arena', { ciclo: 6 }) %>
+    <form action="/usuario/compensacion/finalizar" method="POST" class="temporizador"
+      data-inicio="<%= inicioMs %>" data-duracion="<%= duracionMs %>" data-ahora="<%= ahoraMs %>">
+      <button type="submit" class="btn btn--primario btn--finalizar" id="btnFinalizar" disabled>Finalizar Compensación</button>
+      <p class="temporizador__tiempo" id="tiempo" aria-live="off">00:00:00</p>
+    </form>
+  </main>
+  <script src="/js/temporizador.js"></script>
+</body>
+</html>

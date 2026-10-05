@@ -1,0 +1,19 @@
+<%- include('../partials/layout-inicio') %>
+<div class="encabezado">
+  <h2 class="encabezado__titulo">Notificaciones</h2>
+</div>
+<div class="card notificaciones">
+  <% if (notificaciones.length) { %>
+    <ul class="notificaciones__lista">
+      <% notificaciones.forEach(n => { %>
+        <li class="<%= n.leida ? '' : 'is-nueva' %>">
+          <p><%= n.mensaje %></p>
+          <time datetime="<%= n.fecha %>"><%= new Date(n.fecha).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) %></time>
+        </li>
+      <% }) %>
+    </ul>
+  <% } else { %>
+    <p class="vacio">Aún no hay notificaciones.</p>
+  <% } %>
+</div>
+<%- include('../partials/layout-fin') %>

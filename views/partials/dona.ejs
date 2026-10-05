@@ -1,0 +1,24 @@
+<%#
+  Dona "Mi Progreso": rojo = horas entre semana, azul = sábados, amarillo = horas restantes.
+  Recibe: resumen
+%>
+<%
+  const r = 150, c = 2 * Math.PI * r;
+  const total = resumen.requeridas;
+  const segmentos = [
+    { valor: Math.min(resumen.horasSabado, total), clase: 'dona__azul', texto: 'Horas compensadas en sábado' },
+    { valor: resumen.restantes, clase: 'dona__amarillo', texto: 'Horas restantes' },
+    { valor: Math.max(resumen.compensadas - Math.min(resumen.horasSabado, total), 0), clase: 'dona__rojo', texto: 'Horas compensadas entre semana' },
+  ];
+  let acumulado = 0;
+%>
+<svg class="dona" viewBox="0 0 400 400" role="img" aria-label="Progreso: <%= resumen.compensadas %> de <%= total %> horas compensadas">
+  <g transform="rotate(-130 200 200)">
+    <% segmentos.forEach(s => { if (s.valor <= 0) return; const largo = (s.valor / total) * c; %>
+      <circle class="<%= s.clase %>" cx="200" cy="200" r="<%= r %>" fill="none" stroke-width="58"
+        stroke-dasharray="<%= largo %> <%= c - largo %>" stroke-dashoffset="<%= -acumulado %>">
+        <title><%= s.texto %>: <%= s.valor %> h</title>
+      </circle>
+    <% acumulado += largo; }) %>
+  </g>
+</svg>

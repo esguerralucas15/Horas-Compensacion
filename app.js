@@ -1,17 +1,27 @@
-import express from 'express';
-import { join, resolve } from "path";
+import express from "express";
+import { join } from "path";
 
 import appRouter from "./routes/router.js";
+import sesion from "./config/session.js";
+import { PORT } from "./config/config.js";
+import { variablesVista } from "./middlewares/auth.js";
+import { noEncontrado, manejadorErrores } from "./middlewares/errores.js";
 
 const app = express();
-const port = 3000;
-app.set("view engine", 'ejs');
-app.set("views", "views")
-app.use(express.static(join("./public")))
-	
+
+app.set("view engine", "ejs");
+app.set("views", join(import.meta.dirname, "views"));
+
+app.use(express.static(join(import.meta.dirname, "public")));
+app.use(express.urlencoded({ extended: false }));
+app.use(sesion);
+app.use(variablesVista);
 
 app.use("/", appRouter);
 
-app.listen(port, () => {
-  console.log(`Server running 🚀 at http://localhost:${port}`);
+app.use(noEncontrado);
+app.use(manejadorErrores);
+
+app.listen(PORT, () => {
+  console.log(`Server running 🚀 at http://localhost:${PORT}`);
 });

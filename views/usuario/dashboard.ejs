@@ -1,0 +1,44 @@
+<%- include('../partials/layout-inicio') %>
+<div class="encabezado">
+  <h2 class="encabezado__titulo">Bienvenid@ <%= usuario.nombre %></h2>
+  <a href="<%= activa ? '/usuario/compensacion/temporizador' : '/usuario/compensacion/inicio?tipo=hora' %>" class="btn btn--primario">
+    <%= activa ? 'Continuar Compensación' : 'Iniciar Compensación' %>
+  </a>
+</div>
+
+<div class="dashboard">
+  <div class="card stat">
+    <p class="card__titulo">Horas Compensadas</p>
+    <p class="stat__valor"><%= resumen.compensadas %> <span>Horas</span></p>
+  </div>
+  <div class="card stat">
+    <p class="card__titulo">Horas Restantes</p>
+    <p class="stat__valor"><%= resumen.restantes %> <span>Horas</span></p>
+  </div>
+  <div class="card progreso">
+    <p class="card__titulo">Mi Progreso</p>
+    <%- include('../partials/dona', { resumen }) %>
+    <div class="barra" role="progressbar" aria-valuenow="<%= resumen.porcentaje %>" aria-valuemin="0" aria-valuemax="100" title="<%= resumen.porcentaje %>%">
+      <div class="barra__relleno" style="width: <%= resumen.porcentaje %>%"></div>
+    </div>
+  </div>
+  <%- include('../partials/calendario', { calendario, diasMarcados: resumen.diasCompensados }) %>
+</div>
+
+<% if (registrada) { %>
+  <div class="modal" id="modalExito" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+    <div class="modal__caja">
+      <button type="button" class="modal__cerrar" data-cerrar-modal aria-label="Cerrar">
+        <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 4l16 16M20 4 4 20"/></svg>
+      </button>
+      <div class="modal__icono">
+        <svg viewBox="0 0 100 100" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round">
+          <path d="M77 46a27 27 0 1 1-12-21"/>
+          <path d="M36 50l9 9 33-33"/>
+        </svg>
+      </div>
+      <p class="modal__texto" id="modalTitulo">Compensación registrada exitosamente</p>
+    </div>
+  </div>
+<% } %>
+<%- include('../partials/layout-fin') %>

@@ -1,0 +1,65 @@
+<%- include('../partials/layout-inicio') %>
+<div class="encabezado">
+  <h2 class="encabezado__titulo">Bienvenida Milena</h2>
+  <a href="/admin/reporte" class="btn btn--primario">Generar Reporte</a>
+</div>
+
+<div class="admin-stats">
+  <div class="card stat">
+    <p class="card__titulo">Funcionarios</p>
+    <p class="stat__valor"><%= funcionarios.length %> <span>Personas</span></p>
+  </div>
+  <div class="card stat">
+    <p class="card__titulo">Horas compensadas por el equipo</p>
+    <p class="stat__valor"><%= totalCompensadas %> <span>Horas</span></p>
+  </div>
+  <div class="card stat">
+    <p class="card__titulo">En Curso</p>
+    <p class="stat__valor"><%= enCurso %> <span><%= enCurso === 1 ? 'Compensación' : 'Compensaciones' %></span></p>
+  </div>
+</div>
+
+<div class="admin-grid">
+  <div class="card tabla-card">
+    <p class="card__titulo">Progreso de Funcionarios</p>
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead>
+          <tr><th>Nombre y Apellido</th><th>C.C</th><th>Compensadas</th><th>Restantes</th><th>Progreso</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% funcionarios.forEach(f => { %>
+            <tr>
+              <td><%= f.nombreCompleto %></td>
+              <td><%= f.cedula %></td>
+              <td><%= f.resumen.compensadas %> h</td>
+              <td><%= f.resumen.restantes %> h</td>
+              <td>
+                <div class="barra barra--tabla" title="<%= f.resumen.porcentaje %>%"><div class="barra__relleno" style="width: <%= f.resumen.porcentaje %>%"></div></div>
+              </td>
+              <td><a class="tabla__link" href="/admin/funcionarios/<%= f.cedula %>">Ver detalle</a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card notificaciones">
+    <p class="card__titulo">Notificaciones <% if (sinLeer) { %><span class="insignia"><%= sinLeer %></span><% } %></p>
+    <% if (notificaciones.length) { %>
+      <ul class="notificaciones__lista">
+        <% notificaciones.forEach(n => { %>
+          <li class="<%= n.leida ? '' : 'is-nueva' %>">
+            <p><%= n.mensaje %></p>
+            <time datetime="<%= n.fecha %>"><%= new Date(n.fecha).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) %></time>
+          </li>
+        <% }) %>
+      </ul>
+      <a class="tabla__link" href="/admin/notificaciones">Ver todas</a>
+    <% } else { %>
+      <p class="vacio">Aún no hay notificaciones.</p>
+    <% } %>
+  </div>
+</div>
+<%- include('../partials/layout-fin') %>

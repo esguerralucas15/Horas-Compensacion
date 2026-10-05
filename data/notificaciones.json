@@ -1,0 +1,18 @@
+[
+  {
+    "id": "muvo3m6w",
+    "leida": true,
+    "fecha": "2026-10-05T19:53:31.160Z",
+    "cedula": "1012345678",
+    "nombre": "Lucas",
+    "mensaje": "Lucas registró 1 hora de compensación (Hora diaria) el Lunes 5 de Octubre."
+  },
+  {
+    "id": "muvo2w6i",
+    "leida": true,
+    "fecha": "2026-10-05T19:52:57.450Z",
+    "cedula": "1012345678",
+    "nombre": "Lucas",
+    "mensaje": "Lucas registró 7 horas de compensación (Jornada sábado) el Sábado 31 de Octubre."
+  }
+]

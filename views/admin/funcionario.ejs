@@ -1,0 +1,46 @@
+<%- include('../partials/layout-inicio') %>
+<div class="encabezado">
+  <h2 class="encabezado__titulo"><%= funcionario.nombreCompleto %> <small class="encabezado__sub">C.C <%= funcionario.cedula %></small></h2>
+  <a href="/admin/dashboard" class="btn btn--primario">Volver</a>
+</div>
+
+<div class="dashboard">
+  <div class="card stat">
+    <p class="card__titulo">Horas Compensadas</p>
+    <p class="stat__valor"><%= resumen.compensadas %> <span>Horas</span></p>
+  </div>
+  <div class="card stat">
+    <p class="card__titulo">Horas Restantes</p>
+    <p class="stat__valor"><%= resumen.restantes %> <span>Horas</span></p>
+  </div>
+  <div class="card progreso">
+    <p class="card__titulo">Progreso</p>
+    <%- include('../partials/dona', { resumen }) %>
+    <div class="barra" title="<%= resumen.porcentaje %>%"><div class="barra__relleno" style="width: <%= resumen.porcentaje %>%"></div></div>
+  </div>
+  <%- include('../partials/calendario', { calendario, diasMarcados: resumen.diasCompensados }) %>
+</div>
+
+<div class="card tabla-card historial">
+  <p class="card__titulo">Historial</p>
+  <% if (resumen.historial.length) { %>
+    <div class="tabla-scroll">
+      <table class="tabla">
+        <thead><tr><th>Tipo</th><th>Fecha</th><th>Horas</th><th>Finalizada</th></tr></thead>
+        <tbody>
+          <% resumen.historial.forEach(c => { %>
+            <tr>
+              <td><%= tipos[c.tipo].nombre %></td>
+              <td><%= fechaLarga(c.fecha) %></td>
+              <td><%= tipos[c.tipo].horas %></td>
+              <td><%= new Date(c.fin).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <p class="vacio">Este funcionario aún no ha registrado compensaciones.</p>
+  <% } %>
+</div>
+<%- include('../partials/layout-fin') %>
