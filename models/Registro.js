@@ -41,7 +41,8 @@ registroSchema.index(
 );
 
 // Mismos nombres de los índices ya creados en Atlas
-registroSchema.index({ funcionario: 1, estado: 1 }, { name: "funcionario_estado" });
+// (en Atlas quedó con las llaves en orden estado, funcionario; se declara igual)
+registroSchema.index({ estado: 1, funcionario: 1 }, { name: "funcionario_estado" });
 registroSchema.index({ estado: 1, limiteFinalizar: 1 }, { name: "estado_limiteFinalizar" });
 registroSchema.index({ fecha: 1 }, { name: "fecha" });
 
