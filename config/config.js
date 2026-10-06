@@ -2,7 +2,7 @@
 export const PORT = process.env.PORT || 3000;
 
 // Única cédula con acceso a las páginas de administrador
-export const CEDULA_ADMIN = "52369618";
+export const CEDULA_ADMIN = "1000000100";
 
 export const SESSION_SECRET =
   process.env.SESSION_SECRET || "horas-compensacion-sed-secret";

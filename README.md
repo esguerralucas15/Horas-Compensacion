@@ -18,7 +18,7 @@ DURACION_PRUEBA_SEG=10 npm start
 
 ## Acceso por número de identificación
 
-- **52369618** → páginas de administrador (`/admin/...`).
+- **1000000100** → páginas de administrador (`/admin/...`).
 - Cualquier otra cédula registrada en `data/usuarios.json` → páginas de funcionario (`/usuario/...`).
 - Cédulas no registradas no pueden ingresar.
 
