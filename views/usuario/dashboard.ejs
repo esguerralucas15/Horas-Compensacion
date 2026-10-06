@@ -1,19 +1,58 @@
 <%- include('../partials/layout-inicio') %>
 <div class="encabezado">
-  <h2 class="encabezado__titulo">Bienvenid@ <%= usuario.nombre %></h2>
-  <a href="<%= activa ? '/usuario/compensacion/temporizador' : '/usuario/compensacion/inicio?tipo=hora' %>" class="btn btn--primario">
-    <%= activa ? 'Continuar Compensación' : 'Iniciar Compensación' %>
-  </a>
+  <div>
+    <h2 class="encabezado__titulo">Bienvenid@ <%= usuario.nombre %></h2>
+    <p class="encabezado__info">
+      <%= funcionario.turno ? `Turno de descanso ${funcionario.turno}` : 'Sin turno de descanso escogido' %>
+      · Debes compensar <%= numero(resumen.requeridas) %> horas
+    </p>
+  </div>
+  <% if (opciones.enCurso) { %>
+    <a href="/usuario/compensacion/temporizador" class="btn btn--primario">Continuar Compensación</a>
+  <% } %>
 </div>
+
+<% if (flashError) { %>
+  <p class="alerta" role="alert"><%= flashError %></p>
+<% } %>
+
+<% if (!opciones.enCurso) { %>
+  <%
+    // El sábado solo se muestra a quien tiene sábados asignados
+    const acciones = [{ tipo: 'hora', texto: 'Iniciar hora adicional', evaluacion: opciones.hora }];
+    if (opciones.sabado.codigo !== 'SIN_SABADOS') {
+      acciones.push({ tipo: 'sabado', texto: 'Iniciar sábado', evaluacion: opciones.sabado });
+    }
+  %>
+  <div class="acciones">
+    <% acciones.forEach(a => { %>
+      <div class="card accion">
+        <% if (a.evaluacion.permitido) { %>
+          <a href="/usuario/compensacion/inicio?tipo=<%= a.tipo %>" class="btn btn--primario"><%= a.texto %></a>
+        <% } else { %>
+          <button type="button" class="btn btn--primario" disabled aria-describedby="motivo-<%= a.tipo %>"><%= a.texto %></button>
+        <% } %>
+        <p class="accion__motivo" id="motivo-<%= a.tipo %>"><%= a.evaluacion.motivo %></p>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+
+<% if (resumen.sinFinalizar) { %>
+  <p class="aviso">
+    Tienes <%= resumen.sinFinalizar %> <%= resumen.sinFinalizar === 1 ? 'compensación' : 'compensaciones' %>
+    sin finalizar: no <%= resumen.sinFinalizar === 1 ? 'suma' : 'suman' %> horas porque no se presionó Finalizar a tiempo.
+  </p>
+<% } %>
 
 <div class="dashboard">
   <div class="card stat">
     <p class="card__titulo">Horas Compensadas</p>
-    <p class="stat__valor"><%= resumen.compensadas %> <span>Horas</span></p>
+    <p class="stat__valor"><%= numero(resumen.compensadas) %> <span>Horas</span></p>
   </div>
   <div class="card stat">
     <p class="card__titulo">Horas Restantes</p>
-    <p class="stat__valor"><%= resumen.restantes %> <span>Horas</span></p>
+    <p class="stat__valor"><%= numero(resumen.restantes) %> <span>Horas</span></p>
   </div>
   <div class="card progreso">
     <p class="card__titulo">Mi Progreso</p>
@@ -21,6 +60,11 @@
     <div class="barra" role="progressbar" aria-valuenow="<%= resumen.porcentaje %>" aria-valuemin="0" aria-valuemax="100" title="<%= resumen.porcentaje %>%">
       <div class="barra__relleno" style="width: <%= resumen.porcentaje %>%"></div>
     </div>
+    <ul class="leyenda">
+      <li><span class="leyenda__color leyenda__color--rojo"></span>Hora adicional: <%= numero(resumen.horasSemana) %> h</li>
+      <li><span class="leyenda__color leyenda__color--azul"></span>Sábados: <%= numero(resumen.horasSabado) %> h</li>
+      <li><span class="leyenda__color leyenda__color--amarillo"></span>Restantes: <%= numero(resumen.restantes) %> h</li>
+    </ul>
   </div>
   <%- include('../partials/calendario', { calendario, diasMarcados: resumen.diasCompensados }) %>
 </div>

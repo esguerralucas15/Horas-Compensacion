@@ -2,7 +2,7 @@ import Funcionario from "../models/Funcionario.js";
 import Registro, { NOMBRES_TIPO, NOMBRES_ESTADO } from "../models/Registro.js";
 import { avanceEquipo, historialFuncionario, vencerRegistros } from "../services/horas.js";
 import { resumen } from "../services/reglas.js";
-import { ahora, partesBogota, calendarioMes, fechaLegible } from "../services/tiempo.js";
+import { ahora, partesBogota, calendarioMes } from "../services/tiempo.js";
 import { generarReportePDF } from "../services/reporte.js";
 
 // Filtros del panel y del reporte: ?turno=1|2|3|sin y ?estado=completo|progreso
@@ -10,6 +10,14 @@ function leerFiltros(query) {
   const turno = ["1", "2", "3", "sin"].includes(query.turno) ? query.turno : "";
   const estado = ["completo", "progreso"].includes(query.estado) ? query.estado : "";
   return { turno, estado };
+}
+
+// Texto de los filtros para el encabezado del reporte
+function describirFiltros({ turno, estado }) {
+  const partes = [];
+  if (turno) partes.push(turno === "sin" ? "Sin turno" : `Turno ${turno}`);
+  if (estado) partes.push(estado === "completo" ? "Completaron sus horas" : "En progreso");
+  return partes.join(" · ");
 }
 
 async function equipoFiltrado({ turno, estado }) {
@@ -48,7 +56,6 @@ export async function registros(req, res) {
     filtro,
     tipos: NOMBRES_TIPO,
     estados: NOMBRES_ESTADO,
-    fechaLegible,
   });
 }
 
@@ -64,7 +71,6 @@ export async function detalleFuncionario(req, res, next) {
     calendario: calendarioMes(instante),
     tipos: NOMBRES_TIPO,
     estados: NOMBRES_ESTADO,
-    fechaLegible,
   });
 }
 
@@ -74,5 +80,5 @@ export async function reporte(req, res) {
   const nombreArchivo = `reporte-horas-compensacion-${partesBogota(ahora()).fecha}.pdf`;
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename="${nombreArchivo}"`);
-  generarReportePDF(funcionarios, res);
+  generarReportePDF(funcionarios, res, { filtro: describirFiltros(filtros) });
 }

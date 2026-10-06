@@ -2,25 +2,52 @@
 <section class="sabados">
   <h2 class="sabados__titulo">Compensación día sábado</h2>
   <p class="sabados__texto">
-    Como alternativa a la reposición de tiempo en días hábiles, puedes solicitar la compensación en modalidad
-    presencial los dias sábados, ten en cuenta que esta opción exige el cumplimiento de la jornada completa
-    (excluyendo la hora de almuerzo) y está sujeta a la autorización previa de tu jefe inmediato según las
-    necesidades del servicio.
+    Como alternativa a la hora adicional en días hábiles, algunas personas compensan en modalidad presencial
+    los sábados que acordaron con la jefe de área. Solo puedes registrar los sábados que tienes asignados,
+    en su horario: el botón para iniciar se habilita ese día a la hora de entrada.
   </p>
 
-  <form class="card sabados__card" action="/usuario/sabados" method="POST">
-    <label for="fecha" class="sabados__pregunta">Selecciona el dia sábado en que estás realizando tu compensación</label>
-    <% const hayDisponibles = sabados.some(s => !s.compensado); %>
-    <div class="select">
-      <select id="fecha" name="fecha" required>
-        <% let elegido = false; sabados.forEach(s => { const sel = !s.compensado && !elegido; if (sel) elegido = true; %>
-          <option value="<%= s.valor %>" <%= s.compensado ? 'disabled' : '' %> <%= sel ? 'selected' : '' %>><%= s.texto %></option>
-        <% }) %>
-      </select>
-    </div>
-    <% if (error) { %><p class="login__error" role="alert"><%= error %></p><% } %>
-    <% if (!hayDisponibles) { %><p class="login__error" role="alert">Ya compensaste todos los sábados habilitados.</p><% } %>
-    <button type="submit" class="btn btn--primario btn--mediano" <%= hayDisponibles ? '' : 'disabled' %>>Iniciar Compensación</button>
-  </form>
+  <div class="card tabla-card">
+    <p class="card__titulo">Mis sábados asignados</p>
+    <% if (sabados.length) { %>
+      <div class="tabla-scroll">
+        <table class="tabla">
+          <thead><tr><th>Fecha</th><th>Horario</th><th>Horas</th><th>Estado</th></tr></thead>
+          <tbody>
+            <% sabados.forEach(s => {
+              let clase = 'pendiente', texto = s.esHoy ? 'Hoy' : 'Pendiente';
+              if (s.estado === 'registrado') {
+                clase = s.registro.estado;
+                texto = { en_curso: 'En curso', finalizado: 'Finalizado', sin_finalizar: 'Sin finalizar' }[s.registro.estado];
+              } else if (s.estado === 'pasado') {
+                clase = 'pasado'; texto = 'No registrado';
+              }
+            %>
+              <tr>
+                <td><%= fechaLegible(s.fecha) %></td>
+                <td><%= horaLegible(s.horaInicio) %> a <%= horaLegible(s.horaFin) %></td>
+                <td><%= numero(s.horas) %> h</td>
+                <td><span class="estado estado--<%= clase %>"><%= texto %></span></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="accion accion--centrada">
+        <% if (enCurso) { %>
+          <a href="/usuario/compensacion/temporizador" class="btn btn--primario">Continuar Compensación</a>
+        <% } else if (opcion.permitido) { %>
+          <a href="/usuario/compensacion/inicio?tipo=sabado" class="btn btn--primario">Iniciar sábado</a>
+          <p class="accion__motivo"><%= opcion.motivo %></p>
+        <% } else { %>
+          <button type="button" class="btn btn--primario" disabled aria-describedby="motivoSabado">Iniciar sábado</button>
+          <p class="accion__motivo" id="motivoSabado"><%= opcion.motivo %></p>
+        <% } %>
+      </div>
+    <% } else { %>
+      <p class="vacio">No tienes sábados asignados. Si quieres compensar en sábado, habla con la jefe de área.</p>
+    <% } %>
+  </div>
 </section>
 <%- include('../partials/layout-fin') %>

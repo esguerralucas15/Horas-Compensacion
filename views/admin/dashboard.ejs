@@ -1,7 +1,11 @@
 <%- include('../partials/layout-inicio') %>
+<%
+  // Los filtros activos también se aplican al reporte PDF
+  const consulta = new URLSearchParams(Object.entries(filtros).filter(([, v]) => v)).toString();
+%>
 <div class="encabezado">
-  <h2 class="encabezado__titulo">Bienvenida</h2>
-  <a href="/admin/reporte" class="btn btn--primario">Generar Reporte</a>
+  <h2 class="encabezado__titulo">Bienvenid@ <%= usuario.nombre %></h2>
+  <a href="/admin/reporte<%= consulta ? '?' + consulta : '' %>" class="btn btn--primario">Generar Reporte</a>
 </div>
 
 <div class="admin-stats">
@@ -11,55 +15,71 @@
   </div>
   <div class="card stat">
     <p class="card__titulo">Horas compensadas por el equipo</p>
-    <p class="stat__valor"><%= totalCompensadas %> <span>Horas</span></p>
+    <p class="stat__valor"><%= numero(totalCompensadas) %> <span>Horas</span></p>
   </div>
   <div class="card stat">
-    <p class="card__titulo">En Curso</p>
-    <p class="stat__valor"><%= enCurso %> <span><%= enCurso === 1 ? 'Compensación' : 'Compensaciones' %></span></p>
+    <p class="card__titulo">En curso ahora</p>
+    <p class="stat__valor"><%= enCurso %> <span><%= enCurso === 1 ? 'Persona' : 'Personas' %></span></p>
+  </div>
+  <div class="card stat">
+    <p class="card__titulo">Sin finalizar</p>
+    <p class="stat__valor"><%= sinFinalizar %> <span><%= sinFinalizar === 1 ? 'Registro' : 'Registros' %></span></p>
   </div>
 </div>
 
-<div class="admin-grid">
-  <div class="card tabla-card">
-    <p class="card__titulo">Progreso de Funcionarios</p>
+<div class="card tabla-card">
+  <p class="card__titulo">Progreso de Funcionarios</p>
+  <form class="filtro" method="GET" action="/admin/dashboard">
+    <label for="turno" class="filtro__label">Turno</label>
+    <div class="select select--pequeno">
+      <select id="turno" name="turno" onchange="this.form.submit()">
+        <option value="">Todos</option>
+        <% ['1', '2', '3'].forEach(t => { %>
+          <option value="<%= t %>" <%= filtros.turno === t ? 'selected' : '' %>>Turno <%= t %></option>
+        <% }) %>
+        <option value="sin" <%= filtros.turno === 'sin' ? 'selected' : '' %>>Sin turno</option>
+      </select>
+    </div>
+    <label for="estado" class="filtro__label">Avance</label>
+    <div class="select select--pequeno">
+      <select id="estado" name="estado" onchange="this.form.submit()">
+        <option value="">Todos</option>
+        <option value="completo" <%= filtros.estado === 'completo' ? 'selected' : '' %>>Completaron sus horas</option>
+        <option value="progreso" <%= filtros.estado === 'progreso' ? 'selected' : '' %>>En progreso</option>
+      </select>
+    </div>
+    <noscript><button class="btn btn--primario btn--mediano">Filtrar</button></noscript>
+  </form>
+
+  <% if (funcionarios.length) { %>
     <div class="tabla-scroll">
       <table class="tabla">
         <thead>
-          <tr><th>Nombre y Apellido</th><th>C.C</th><th>Compensadas</th><th>Restantes</th><th>Progreso</th><th></th></tr>
+          <tr><th>Nombre y Apellido</th><th>C.C</th><th>Turno</th><th>Compensadas</th><th>Restantes</th><th>Sin finalizar</th><th>Progreso</th><th></th></tr>
         </thead>
         <tbody>
           <% funcionarios.forEach(f => { %>
             <tr>
-              <td><%= f.nombreCompleto %></td>
-              <td><%= f.cedula %></td>
-              <td><%= f.resumen.compensadas %> h</td>
-              <td><%= f.resumen.restantes %> h</td>
               <td>
-                <div class="barra barra--tabla" title="<%= f.resumen.porcentaje %>%"><div class="barra__relleno" style="width: <%= f.resumen.porcentaje %>%"></div></div>
+                <%= f.nombre %>
+                <% if (f.enCurso) { %><span class="estado estado--en_curso">En curso</span><% } %>
               </td>
-              <td><a class="tabla__link" href="/admin/funcionarios/<%= f.cedula %>">Ver detalle</a></td>
+              <td><%= f._id %></td>
+              <td><%= f.turno ?? 'Sin turno' %></td>
+              <td><%= numero(f.compensadas) %> de <%= numero(f.horasRequeridas) %> h</td>
+              <td><%= numero(f.restantes) %> h</td>
+              <td><%= f.sinFinalizar || '—' %></td>
+              <td>
+                <div class="barra barra--tabla" title="<%= f.porcentaje %>%"><div class="barra__relleno" style="width: <%= f.porcentaje %>%"></div></div>
+              </td>
+              <td><a class="tabla__link" href="/admin/funcionarios/<%= f._id %>">Ver detalle</a></td>
             </tr>
           <% }) %>
         </tbody>
       </table>
     </div>
-  </div>
-
-  <div class="card notificaciones">
-    <p class="card__titulo">Notificaciones <% if (sinLeer) { %><span class="insignia"><%= sinLeer %></span><% } %></p>
-    <% if (notificaciones.length) { %>
-      <ul class="notificaciones__lista">
-        <% notificaciones.forEach(n => { %>
-          <li class="<%= n.leida ? '' : 'is-nueva' %>">
-            <p><%= n.mensaje %></p>
-            <time datetime="<%= n.fecha %>"><%= new Date(n.fecha).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) %></time>
-          </li>
-        <% }) %>
-      </ul>
-      <a class="tabla__link" href="/admin/notificaciones">Ver todas</a>
-    <% } else { %>
-      <p class="vacio">Aún no hay notificaciones.</p>
-    <% } %>
-  </div>
+  <% } else { %>
+    <p class="vacio">No hay funcionarios con estos filtros.</p>
+  <% } %>
 </div>
 <%- include('../partials/layout-fin') %>

@@ -1,22 +1,37 @@
 <%- include('../partials/layout-inicio') %>
 <div class="encabezado">
-  <h2 class="encabezado__titulo"><%= funcionario.nombreCompleto %> <small class="encabezado__sub">C.C <%= funcionario.cedula %></small></h2>
+  <div>
+    <h2 class="encabezado__titulo"><%= funcionario.nombre %> <small class="encabezado__sub">C.C <%= funcionario._id %></small></h2>
+    <p class="encabezado__info">
+      <%= funcionario.turno ? `Turno ${funcionario.turno}` : 'Sin turno' %>
+      · Jornada de <%= numero(funcionario.jornadaDiaria) %> h
+      · Debe compensar <%= numero(resumen.requeridas) %> h
+      <% if (funcionario.sabados?.length) { %>
+        · Sábados: <%= funcionario.sabados.map(s => fechaLegible(s.fecha).replace('sábado ', '')).join(', ') %>
+      <% } %>
+    </p>
+  </div>
   <a href="/admin/dashboard" class="btn btn--primario">Volver</a>
 </div>
 
 <div class="dashboard">
   <div class="card stat">
     <p class="card__titulo">Horas Compensadas</p>
-    <p class="stat__valor"><%= resumen.compensadas %> <span>Horas</span></p>
+    <p class="stat__valor"><%= numero(resumen.compensadas) %> <span>Horas</span></p>
   </div>
   <div class="card stat">
     <p class="card__titulo">Horas Restantes</p>
-    <p class="stat__valor"><%= resumen.restantes %> <span>Horas</span></p>
+    <p class="stat__valor"><%= numero(resumen.restantes) %> <span>Horas</span></p>
   </div>
   <div class="card progreso">
     <p class="card__titulo">Progreso</p>
     <%- include('../partials/dona', { resumen }) %>
     <div class="barra" title="<%= resumen.porcentaje %>%"><div class="barra__relleno" style="width: <%= resumen.porcentaje %>%"></div></div>
+    <ul class="leyenda">
+      <li><span class="leyenda__color leyenda__color--rojo"></span>Hora adicional: <%= numero(resumen.horasSemana) %> h</li>
+      <li><span class="leyenda__color leyenda__color--azul"></span>Sábados: <%= numero(resumen.horasSabado) %> h</li>
+      <li><span class="leyenda__color leyenda__color--amarillo"></span>Restantes: <%= numero(resumen.restantes) %> h</li>
+    </ul>
   </div>
   <%- include('../partials/calendario', { calendario, diasMarcados: resumen.diasCompensados }) %>
 </div>
@@ -26,14 +41,16 @@
   <% if (resumen.historial.length) { %>
     <div class="tabla-scroll">
       <table class="tabla">
-        <thead><tr><th>Tipo</th><th>Fecha</th><th>Horas</th><th>Finalizada</th></tr></thead>
+        <thead><tr><th>Tipo</th><th>Fecha</th><th>Horas</th><th>Inicio</th><th>Fin</th><th>Estado</th></tr></thead>
         <tbody>
-          <% resumen.historial.forEach(c => { %>
+          <% resumen.historial.forEach(r => { %>
             <tr>
-              <td><%= tipos[c.tipo].nombre %></td>
-              <td><%= fechaLarga(c.fecha) %></td>
-              <td><%= tipos[c.tipo].horas %></td>
-              <td><%= new Date(c.fin).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' }) %></td>
+              <td><%= tipos[r.tipo] %></td>
+              <td><%= fechaLegible(r.fecha) %></td>
+              <td><%= numero(r.horas) %></td>
+              <td><%= horaDe(r.inicio) %></td>
+              <td><%= horaDe(r.fin) %></td>
+              <td><span class="estado estado--<%= r.estado %>"><%= estados[r.estado] %></span></td>
             </tr>
           <% }) %>
         </tbody>

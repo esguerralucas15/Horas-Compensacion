@@ -5,12 +5,12 @@
 
 <div class="card tabla-card">
   <form class="filtro" method="GET" action="/admin/registros">
-    <label for="cedula" class="card__titulo">Funcionario</label>
+    <label for="cedula" class="filtro__label">Funcionario</label>
     <div class="select select--pequeno">
       <select id="cedula" name="cedula" onchange="this.form.submit()">
         <option value="">Todos</option>
         <% funcionarios.forEach(f => { %>
-          <option value="<%= f.cedula %>" <%= filtro === f.cedula ? 'selected' : '' %>><%= f.nombreCompleto %> — <%= f.cedula %></option>
+          <option value="<%= f._id %>" <%= filtro === f._id ? 'selected' : '' %>><%= f.nombre %> — <%= f._id %></option>
         <% }) %>
       </select>
     </div>
@@ -21,17 +21,19 @@
     <div class="tabla-scroll">
       <table class="tabla">
         <thead>
-          <tr><th>Funcionario</th><th>C.C</th><th>Tipo</th><th>Fecha</th><th>Horas</th><th>Estado</th></tr>
+          <tr><th>Funcionario</th><th>C.C</th><th>Tipo</th><th>Fecha</th><th>Horas</th><th>Inicio</th><th>Fin</th><th>Estado</th></tr>
         </thead>
         <tbody>
           <% registros.forEach(r => { %>
             <tr>
-              <td><a class="tabla__link" href="/admin/funcionarios/<%= r.cedula %>"><%= r.nombreCompleto %></a></td>
-              <td><%= r.cedula %></td>
-              <td><%= tipos[r.tipo].nombre %></td>
-              <td><%= fechaLarga(r.fecha) %></td>
-              <td><%= tipos[r.tipo].horas %></td>
-              <td><span class="estado estado--<%= r.estado %>"><%= r.estado === 'finalizada' ? 'Finalizada' : 'En curso' %></span></td>
+              <td><a class="tabla__link" href="/admin/funcionarios/<%= r.funcionario %>"><%= r.nombre %></a></td>
+              <td><%= r.funcionario %></td>
+              <td><%= tipos[r.tipo] %></td>
+              <td><%= fechaLegible(r.fecha) %></td>
+              <td><%= numero(r.horas) %></td>
+              <td><%= horaDe(r.inicio) %></td>
+              <td><%= horaDe(r.fin) %></td>
+              <td><span class="estado estado--<%= r.estado %>"><%= estados[r.estado] %></span></td>
             </tr>
           <% }) %>
         </tbody>

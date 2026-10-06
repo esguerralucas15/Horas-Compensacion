@@ -2,18 +2,29 @@
 <body class="pantalla">
   <main class="pantalla__contenido">
     <h1 class="pantalla__titulo">Inicio de Compensación</h1>
-    <% if (yaRegistrada) { %>
-      <p class="pantalla__texto">Ya registraste tu hora de compensación del día de hoy. Podrás registrar una nueva hora mañana.</p>
-      <a href="/usuario/dashboard" class="btn btn--primario">Volver</a>
+    <% if (!evaluacion.permitido) { %>
+      <p class="pantalla__texto"><%= evaluacion.motivo %></p>
+      <a href="<%= tipo === 'sabado' ? '/usuario/sabados' : '/usuario/dashboard' %>" class="btn btn--primario">Volver</a>
     <% } else { %>
       <% if (tipo === 'sabado') { %>
-        <p class="pantalla__texto">Estás a punto de registrar una jornada laboral de compensación para tu periodo de descanso de <%= periodo %>. Al hacer clic en 'Iniciar', comenzará a correr el tiempo correspondiente al día de hoy (8 horas). Una vez transcurrida la jornada de trabajo, recuerda hacer clic en 'Finalizar compensación' para que el registro se guarde y tu jefe de área sea notificado automáticamente.</p>
+        <p class="pantalla__texto">
+          Estás a punto de iniciar tu jornada de compensación de hoy, <%= fechaLegible(horario.fecha) %>,
+          de <%= horaLegible(horario.horaInicio) %> a <%= horaLegible(horario.horaFin) %>
+          (<%= numero(horario.horas) %> horas). Al terminar la jornada se habilita el botón 'Finalizar compensación':
+          presiónalo entre las <%= horaLegible(horario.horaFin) %> y las <%= horaLegible(horario.finalizarHasta) %>.
+          Si no lo haces a tiempo, el sábado no suma horas.
+        </p>
       <% } else { %>
-        <p class="pantalla__texto">Estás a punto de registrar una hora de compensación para tu periodo de descanso de <%= periodo %>. Al hacer clic en 'Iniciar', comenzará a correr el tiempo correspondiente al día de hoy. Una vez transcurrida la hora, recuerda hacer clic en 'Finalizar compensación' para que el registro se guarde y tu jefe de área sea notificado automáticamente.</p>
+        <p class="pantalla__texto">
+          Estás a punto de iniciar tu hora adicional de hoy, de <%= horaLegible(horario.horaInicio) %>
+          a <%= horaLegible(horario.horaFin) %>. Sin importar a qué hora inicies, terminas a las
+          <%= horaLegible(horario.horaFin) %>. Ahí se habilita el botón 'Finalizar compensación':
+          presiónalo entre las <%= horaLegible(horario.horaFin) %> y las <%= horaLegible(horario.finalizarHasta) %>.
+          Si no lo haces a tiempo, la hora no suma.
+        </p>
       <% } %>
       <form action="/usuario/compensacion/iniciar" method="POST">
         <input type="hidden" name="tipo" value="<%= tipo %>">
-        <input type="hidden" name="fecha" value="<%= fecha %>">
         <button type="submit" class="btn btn--primario">Iniciar</button>
       </form>
       <a href="<%= tipo === 'sabado' ? '/usuario/sabados' : '/usuario/dashboard' %>" class="pantalla__volver">Cancelar</a>

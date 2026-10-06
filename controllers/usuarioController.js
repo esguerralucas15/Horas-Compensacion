@@ -4,7 +4,7 @@ import {
   finalizarCompensacion,
   historialFuncionario,
 } from "../services/horas.js";
-import { ahora, partesBogota, calendarioMes, horaLegible, fechaLegible } from "../services/tiempo.js";
+import { ahora, partesBogota, calendarioMes, minutosDe, horaDeMinutos } from "../services/tiempo.js";
 
 const TIPO = (valor) => (valor === "sabado" ? "sabado" : "hora");
 
@@ -64,8 +64,6 @@ export async function sabados(req, res) {
     sabados: sabadosAsignados(panel),
     opcion: panel.opciones.sabado,
     enCurso: panel.opciones.enCurso,
-    horaLegible,
-    fechaLegible,
   });
 }
 
@@ -90,14 +88,21 @@ export async function inicio(req, res) {
     horario = (funcionario.sabados ?? []).find((s) => s.fecha === hoy) ?? evaluacion.proximo ?? null;
   }
 
+  // Hasta qué hora se puede iniciar y hasta qué hora se puede finalizar (con la gracia)
+  const gracia = config.graciaMinutos ?? 0;
+  if (horario) {
+    horario = {
+      ...horario,
+      iniciarHasta: horaDeMinutos(minutosDe(horario.horaInicio) + gracia),
+      finalizarHasta: horaDeMinutos(minutosDe(horario.horaFin) + gracia),
+    };
+  }
+
   res.render("usuario/inicio", {
     titulo: "Inicio de Compensación",
     tipo,
     evaluacion,
     horario,
-    graciaMinutos: config.graciaMinutos ?? 0,
-    horaLegible,
-    fechaLegible,
   });
 }
 
@@ -126,8 +131,6 @@ export async function temporizador(req, res) {
     finProgramadoMs: new Date(registro.finProgramado).getTime(),
     limiteFinalizarMs: new Date(registro.limiteFinalizar).getTime(),
     ahoraMs: panel.ahora.getTime(),
-    horaFin: horaLegible(partesBogota(new Date(registro.finProgramado)).hora),
-    horaLimite: horaLegible(partesBogota(new Date(registro.limiteFinalizar)).hora),
   });
 }
 

@@ -3,9 +3,14 @@
   <main class="pantalla__contenido">
     <%- include('../partials/reloj-arena', { ciclo: 6 }) %>
     <form action="/usuario/compensacion/finalizar" method="POST" class="temporizador"
-      data-inicio="<%= inicioMs %>" data-duracion="<%= duracionMs %>" data-ahora="<%= ahoraMs %>">
+      data-fin="<%= finProgramadoMs %>" data-limite="<%= limiteFinalizarMs %>" data-ahora="<%= ahoraMs %>">
       <button type="submit" class="btn btn--primario btn--finalizar" id="btnFinalizar" disabled>Finalizar Compensación</button>
       <p class="temporizador__tiempo" id="tiempo" aria-live="off">00:00:00</p>
+      <p class="temporizador__nota" id="nota" aria-live="polite"
+        data-espera="<%= registro.tipo === 'sabado' ? 'Sábado' : 'Hora adicional' %>: terminas a las <%= horaDe(registro.finProgramado) %>. Podrás finalizar hasta las <%= horaDe(registro.limiteFinalizar) %>."
+        data-listo="Ya puedes finalizar. Tienes hasta las <%= horaDe(registro.limiteFinalizar) %>."
+        data-vencido="Se venció el plazo para finalizar (hasta las <%= horaDe(registro.limiteFinalizar) %>). Esta compensación no suma horas."></p>
+      <a href="/usuario/dashboard" class="pantalla__volver" id="volver" hidden>Volver al inicio</a>
     </form>
   </main>
   <script src="/js/temporizador.js"></script>
