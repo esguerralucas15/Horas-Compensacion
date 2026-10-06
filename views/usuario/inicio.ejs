@@ -11,15 +11,15 @@
           Estás a punto de iniciar tu jornada de compensación de hoy, <%= fechaLegible(horario.fecha) %>,
           de <%= horaLegible(horario.horaInicio) %> a <%= horaLegible(horario.horaFin) %>
           (<%= numero(horario.horas) %> horas). Al terminar la jornada se habilita el botón 'Finalizar compensación':
-          presiónalo entre las <%= horaLegible(horario.horaFin) %> y las <%= horaLegible(horario.finalizarHasta) %>.
+          presiónalo entre las <%= horaLegible(horario.horaFin) %> y las <%= horaLegible(horario.finalizarHasta) %>
           Si no lo haces a tiempo, el sábado no suma horas.
         </p>
       <% } else { %>
         <p class="pantalla__texto">
           Estás a punto de iniciar tu hora adicional de hoy, de <%= horaLegible(horario.horaInicio) %>
-          a <%= horaLegible(horario.horaFin) %>. Sin importar a qué hora inicies, terminas a las
-          <%= horaLegible(horario.horaFin) %>. Ahí se habilita el botón 'Finalizar compensación':
-          presiónalo entre las <%= horaLegible(horario.horaFin) %> y las <%= horaLegible(horario.finalizarHasta) %>.
+          a <%= horaLegible(horario.horaFin) %> Sin importar a qué hora inicies, terminas a las
+          <%= horaLegible(horario.horaFin) %> Ahí se habilita el botón 'Finalizar compensación':
+          presiónalo entre las <%= horaLegible(horario.horaFin) %> y las <%= horaLegible(horario.finalizarHasta) %>
           Si no lo haces a tiempo, la hora no suma.
         </p>
       <% } %>

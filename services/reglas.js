@@ -167,6 +167,20 @@ export function evaluarSabado({ config, funcionario, registros = [], ahora }) {
 
 // Botón "Finalizar": desde finProgramado hasta limiteFinalizar
 export function evaluarFinalizar({ registro, ahora }) {
+  const vencido = (limite) =>
+    no(
+      "VENCIDO",
+      `Se venció el plazo para finalizar (hasta las ${horaLegible(partesBogota(limite).hora)}). Esta compensación no suma horas.`
+    );
+
+  // Si se presiona Finalizar tarde, el registro ya pudo quedar sin_finalizar:
+  // ese mismo día se explica que el plazo venció en lugar de "no hay en curso"
+  if (
+    registro?.estado === "sin_finalizar" &&
+    partesBogota(new Date(registro.limiteFinalizar)).fecha === partesBogota(ahora).fecha
+  ) {
+    return vencido(new Date(registro.limiteFinalizar));
+  }
   if (!registro || registro.estado !== "en_curso") {
     return no("SIN_CURSO", "No tienes una compensación en curso.");
   }
@@ -177,12 +191,7 @@ export function evaluarFinalizar({ registro, ahora }) {
       finProgramado: fin,
     });
   }
-  if (ahora > limite) {
-    return no(
-      "VENCIDO",
-      `Se venció el plazo para finalizar (hasta las ${horaLegible(partesBogota(limite).hora)}). Esta compensación no suma horas.`
-    );
-  }
+  if (ahora > limite) return vencido(limite);
   return { permitido: true, codigo: "OK", motivo: "Ya puedes finalizar tu compensación." };
 }
 

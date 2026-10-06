@@ -154,6 +154,19 @@ test("finalizar: antes de las 5:30 no; entre 5:30 y 5:45 sí; después vencido",
   assert.equal(evaluarFinalizar({ registro: null, ahora: en("2026-10-13", "17:30") }).codigo, "SIN_CURSO");
 });
 
+test("finalizar tarde: si el registro ya quedó sin_finalizar ese día, el motivo es VENCIDO", () => {
+  const reg = registro({
+    estado: "sin_finalizar",
+    finProgramado: en("2026-10-15", "17:30"),
+    limiteFinalizar: en("2026-10-15", "17:45"),
+  });
+  const r = evaluarFinalizar({ registro: reg, ahora: en("2026-10-15", "17:50") });
+  assert.equal(r.codigo, "VENCIDO");
+  assert.equal(r.motivo, "Se venció el plazo para finalizar (hasta las 5:45 p.m.). Esta compensación no suma horas.");
+  // Al día siguiente ya no aplica: no hay nada en curso
+  assert.equal(evaluarFinalizar({ registro: reg, ahora: en("2026-10-16", "17:35") }).codigo, "SIN_CURSO");
+});
+
 // ---------- Panel y resumen ----------
 
 test("opcionesDelDia junta hora, sábado, en curso y finalizar", () => {
