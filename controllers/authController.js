@@ -1,11 +1,10 @@
-import { buscarUsuario } from "../services/store.js";
-import { CEDULA_ADMIN } from "../config/config.js";
+import Funcionario from "../models/Funcionario.js";
 
 export function mostrarLogin(req, res) {
   res.render("auth/login", { titulo: "Orientaciones Descanso Compensado", error: null, cedula: "" });
 }
 
-export function iniciarSesion(req, res, next) {
+export async function iniciarSesion(req, res, next) {
   const cedula = String(req.body.cedula || "").replace(/\D/g, "");
 
   if (!cedula) {
@@ -16,7 +15,8 @@ export function iniciarSesion(req, res, next) {
     });
   }
 
-  const registrado = buscarUsuario(cedula);
+  // Solo entran las personas activas en la colección funcionarios
+  const registrado = await Funcionario.findOne({ _id: cedula, activo: true }).lean();
   if (!registrado) {
     return res.status(401).render("auth/login", {
       titulo: "Orientaciones Descanso Compensado",
@@ -25,12 +25,12 @@ export function iniciarSesion(req, res, next) {
     });
   }
 
-  // El rol de administrador solo se asigna a la cédula configurada
-  const rol = cedula === CEDULA_ADMIN ? "admin" : "usuario";
+  // El rol (funcionario o admin) sale del documento de la persona
+  const { nombre, rol } = registrado;
 
   req.session.regenerate((err) => {
     if (err) return next(err); // lanzar aquí tumbaría el servidor
-    req.session.usuario = { cedula, nombre: registrado.nombre, area: registrado.area, rol };
+    req.session.usuario = { cedula, nombre, rol };
     res.redirect(rol === "admin" ? "/admin/dashboard" : "/usuario/dashboard");
   });
 }

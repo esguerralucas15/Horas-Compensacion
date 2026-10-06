@@ -6,6 +6,14 @@ const { Schema, model } = mongoose;
 export const ESTADOS = ["en_curso", "finalizado", "sin_finalizar"];
 export const TIPOS = ["hora", "sabado"];
 
+// Textos para las vistas y el reporte
+export const NOMBRES_TIPO = { hora: "Hora adicional", sabado: "Sábado" };
+export const NOMBRES_ESTADO = {
+  en_curso: "En curso",
+  finalizado: "Finalizado",
+  sin_finalizar: "Sin finalizar",
+};
+
 const registroSchema = new Schema(
   {
     // Cédula de la persona (apunta al _id de funcionarios)

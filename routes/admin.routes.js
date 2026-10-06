@@ -9,7 +9,6 @@ router.get("/", (req, res) => res.redirect("/admin/dashboard"));
 router.get("/dashboard", admin.dashboard);
 router.get("/registros", admin.registros);
 router.get("/reporte", admin.reporte);
-router.get("/notificaciones", admin.notificaciones);
 router.get("/funcionarios/:cedula", admin.detalleFuncionario);
 
 export default router;

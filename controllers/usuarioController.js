@@ -1,147 +1,152 @@
-import { PERIODO_DESCANSO, TIPOS_COMPENSACION } from "../config/config.js";
 import {
-  compensacionActiva,
-  compensacionesDe,
-  crearCompensacion,
-  actualizarCompensacion,
-  crearNotificacion,
-  buscarUsuario,
-  nombreCompleto,
-} from "../services/store.js";
-import {
-  resumenUsuario,
-  sabadosDisponibles,
-  sabadosHabilitados,
-  calendarioMes,
-  fechaISO,
-  fechaLarga,
-  duracionMs,
-} from "../services/compensacion.js";
+  panelFuncionario,
+  iniciarCompensacion,
+  finalizarCompensacion,
+  historialFuncionario,
+} from "../services/horas.js";
+import { ahora, partesBogota, calendarioMes, horaLegible, fechaLegible } from "../services/tiempo.js";
 
-function horaRegistradaHoy(cedula, fecha) {
-  return compensacionesDe(cedula).some((c) => c.tipo === "hora" && c.fecha === fecha && c.estado === "finalizada");
+const TIPO = (valor) => (valor === "sabado" ? "sabado" : "hora");
+
+// Mensajes de una sola vez guardados en la sesión
+function tomarFlash(req) {
+  const registrada = req.session.flash === "registrada";
+  const flashError = req.session.flashError || null;
+  delete req.session.flash;
+  delete req.session.flashError;
+  return { registrada, flashError };
 }
 
-export function dashboard(req, res) {
-  const { cedula } = req.session.usuario;
-  const registrada = req.session.flash === "registrada";
-  delete req.session.flash;
+// Si la persona ya no existe en la base, se cierra la sesión
+function sinFuncionario(req, res) {
+  req.session.destroy(() => {
+    res.clearCookie("horas.sid");
+    res.redirect("/login");
+  });
+}
+
+// Sábados asignados a la persona con su estado: registrado (con el estado del
+// registro), pendiente (hoy o más adelante) o pasado (no se registró)
+function sabadosAsignados({ config, funcionario, registros, ahora: instante }) {
+  const hoy = partesBogota(instante).fecha;
+  return (funcionario.sabados ?? [])
+    .filter((s) => (config.sabadosHabilitados ?? []).includes(s.fecha))
+    .sort((a, b) => a.fecha.localeCompare(b.fecha))
+    .map((s) => {
+      const registro = registros.find((r) => r.tipo === "sabado" && r.fecha === s.fecha) ?? null;
+      let estado = "pendiente";
+      if (registro) estado = "registrado";
+      else if (s.fecha < hoy) estado = "pasado";
+      return { ...s, esHoy: s.fecha === hoy, estado, registro };
+    });
+}
+
+export async function dashboard(req, res) {
+  const panel = await panelFuncionario(req.session.usuario.cedula);
+  if (!panel) return sinFuncionario(req, res);
 
   res.render("usuario/dashboard", {
     titulo: "Dashboard",
-    resumen: resumenUsuario(cedula),
-    calendario: calendarioMes(),
-    activa: compensacionActiva(cedula),
-    registrada,
+    funcionario: panel.funcionario,
+    resumen: panel.resumen,
+    opciones: panel.opciones,
+    calendario: calendarioMes(panel.ahora),
+    ...tomarFlash(req),
   });
 }
 
-export function sabados(req, res) {
-  const error = req.session.flashError;
-  delete req.session.flashError;
+export async function sabados(req, res) {
+  const panel = await panelFuncionario(req.session.usuario.cedula);
+  if (!panel) return sinFuncionario(req, res);
+
   res.render("usuario/sabados", {
     titulo: "Compensación Sábados",
-    sabados: sabadosHabilitados(req.session.usuario.cedula),
-    error,
+    sabados: sabadosAsignados(panel),
+    opcion: panel.opciones.sabado,
+    enCurso: panel.opciones.enCurso,
+    horaLegible,
+    fechaLegible,
   });
 }
 
-export function seleccionarSabado(req, res) {
-  const fecha = String(req.body.fecha || "");
-  const valido = sabadosDisponibles(req.session.usuario.cedula).some((s) => s.valor === fecha);
-  if (!valido) {
-    req.session.flashError = "Selecciona un sábado válido";
-    return res.redirect("/usuario/sabados");
-  }
-  res.redirect(`/usuario/compensacion/inicio?tipo=sabado&fecha=${fecha}`);
-}
+// Pantalla "Inicio de Compensación" (hora adicional o sábado).
+// El botón Iniciar solo aparece si las reglas lo permiten; si no, se muestra el motivo.
+export async function inicio(req, res) {
+  const panel = await panelFuncionario(req.session.usuario.cedula);
+  if (!panel) return sinFuncionario(req, res);
+  if (panel.opciones.enCurso) return res.redirect("/usuario/compensacion/temporizador");
 
-// Pantalla "Inicio de Compensación" (hora diaria o jornada de sábado)
-export function inicio(req, res) {
-  const { cedula } = req.session.usuario;
-  if (compensacionActiva(cedula)) return res.redirect("/usuario/compensacion/temporizador");
+  const tipo = TIPO(req.query.tipo);
+  const evaluacion = panel.opciones[tipo];
+  const { config, funcionario } = panel;
 
-  const tipo = req.query.tipo === "sabado" ? "sabado" : "hora";
-  const fecha = tipo === "sabado" ? String(req.query.fecha || "") : fechaISO();
-
-  if (tipo === "sabado" && !sabadosDisponibles(cedula).some((s) => s.valor === fecha)) {
-    return res.redirect("/usuario/sabados");
+  // Horario que se le muestra a la persona
+  let horario;
+  if (tipo === "hora") {
+    const ha = config.horaAdicional;
+    horario = { horaInicio: ha.horaInicio, horaFin: ha.horaFin, horas: ha.horas ?? 1 };
+  } else {
+    const hoy = partesBogota(panel.ahora).fecha;
+    horario = (funcionario.sabados ?? []).find((s) => s.fecha === hoy) ?? evaluacion.proximo ?? null;
   }
 
   res.render("usuario/inicio", {
     titulo: "Inicio de Compensación",
     tipo,
-    fecha,
-    periodo: PERIODO_DESCANSO,
-    // Solo se permite una hora de compensación por día
-    yaRegistrada: tipo === "hora" && horaRegistradaHoy(cedula, fecha),
+    evaluacion,
+    horario,
+    graciaMinutos: config.graciaMinutos ?? 0,
+    horaLegible,
+    fechaLegible,
   });
 }
 
-export function iniciar(req, res) {
-  const { cedula, nombre } = req.session.usuario;
-  if (compensacionActiva(cedula)) return res.redirect("/usuario/compensacion/temporizador");
+export async function iniciar(req, res) {
+  const tipo = TIPO(req.body.tipo);
+  const resultado = await iniciarCompensacion(req.session.usuario.cedula, tipo);
+  if (resultado.ok) return res.redirect("/usuario/compensacion/temporizador");
 
-  const tipo = req.body.tipo === "sabado" ? "sabado" : "hora";
-  const fecha = tipo === "sabado" ? String(req.body.fecha || "") : fechaISO();
-
-  if (tipo === "sabado" && !sabadosDisponibles(cedula).some((s) => s.valor === fecha)) {
-    return res.redirect("/usuario/sabados");
+  // Ya hay un temporizador abierto (p. ej. doble clic): se lleva a él
+  if (resultado.codigo === "EN_CURSO" || resultado.codigo === "DUPLICADO") {
+    return res.redirect("/usuario/compensacion/temporizador");
   }
-  if (tipo === "hora" && horaRegistradaHoy(cedula, fecha)) {
-    return res.redirect("/usuario/compensacion/inicio");
-  }
-
-  crearCompensacion({
-    cedula,
-    nombre,
-    tipo,
-    fecha,
-    horas: TIPOS_COMPENSACION[tipo].horas,
-    inicio: new Date().toISOString(),
-  });
-  res.redirect("/usuario/compensacion/temporizador");
+  req.session.flashError = resultado.motivo;
+  res.redirect("/usuario/dashboard");
 }
 
-export function temporizador(req, res) {
-  const activa = compensacionActiva(req.session.usuario.cedula);
-  if (!activa) return res.redirect("/usuario/dashboard");
+export async function temporizador(req, res) {
+  const panel = await panelFuncionario(req.session.usuario.cedula);
+  if (!panel) return sinFuncionario(req, res);
+  const registro = panel.opciones.enCurso;
+  if (!registro) return res.redirect("/usuario/dashboard");
 
   res.render("usuario/temporizador", {
     titulo: "Compensación en curso",
-    inicioMs: new Date(activa.inicio).getTime(),
-    duracionMs: duracionMs(activa.tipo),
-    ahoraMs: Date.now(),
+    registro,
+    finProgramadoMs: new Date(registro.finProgramado).getTime(),
+    limiteFinalizarMs: new Date(registro.limiteFinalizar).getTime(),
+    ahoraMs: panel.ahora.getTime(),
+    horaFin: horaLegible(partesBogota(new Date(registro.finProgramado)).hora),
+    horaLimite: horaLegible(partesBogota(new Date(registro.limiteFinalizar)).hora),
   });
 }
 
-export function finalizar(req, res) {
-  const { cedula, nombre } = req.session.usuario;
-  const activa = compensacionActiva(cedula);
-  if (!activa) {
-    // Doble clic en "Finalizar": la primera petición ya guardó; se conserva el mensaje de éxito
-    const ultima = compensacionesDe(cedula).filter((c) => c.fin).sort((a, b) => b.fin.localeCompare(a.fin))[0];
-    if (ultima && Date.now() - new Date(ultima.fin).getTime() < 15000) req.session.flash = "registrada";
+export async function finalizar(req, res) {
+  const { cedula } = req.session.usuario;
+  const resultado = await finalizarCompensacion(cedula);
+  if (resultado.ok) {
+    req.session.flash = "registrada";
     return res.redirect("/usuario/dashboard");
   }
 
-  // Validación en servidor: el tiempo completo debe haber transcurrido
-  const transcurrido = Date.now() - new Date(activa.inicio).getTime();
-  if (transcurrido < duracionMs(activa.tipo) - 2000) {
-    return res.redirect("/usuario/compensacion/temporizador");
+  // Doble clic en "Finalizar": la primera petición ya guardó; se conserva el mensaje de éxito
+  if (resultado.codigo === "SIN_CURSO") {
+    const [ultimo] = await historialFuncionario(cedula);
+    if (ultimo?.estado === "finalizado" && ahora() - new Date(ultimo.fin) < 15000) {
+      req.session.flash = "registrada";
+      return res.redirect("/usuario/dashboard");
+    }
   }
-
-  actualizarCompensacion(activa.id, { estado: "finalizada", fin: new Date().toISOString() });
-
-  // Notificación automática al jefe de área
-  const horas = TIPOS_COMPENSACION[activa.tipo].horas;
-  const completo = nombreCompleto(buscarUsuario(cedula) || { nombre });
-  crearNotificacion({
-    cedula,
-    nombre: completo,
-    mensaje: `${completo} registró ${horas} ${horas === 1 ? "hora" : "horas"} de compensación (${TIPOS_COMPENSACION[activa.tipo].nombre}) el ${fechaLarga(activa.fecha)}.`,
-  });
-
-  req.session.flash = "registrada";
+  req.session.flashError = resultado.motivo;
   res.redirect("/usuario/dashboard");
 }

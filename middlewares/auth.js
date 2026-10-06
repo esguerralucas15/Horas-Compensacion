@@ -13,7 +13,7 @@ export function soloAdmin(req, res, next) {
 }
 
 export function soloUsuario(req, res, next) {
-  if (req.session.usuario?.rol !== "usuario") {
+  if (req.session.usuario?.rol !== "funcionario") {
     return res.status(403).render("errores/403", { titulo: "Acceso denegado" });
   }
   next();

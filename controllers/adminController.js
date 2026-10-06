@@ -1,77 +1,78 @@
-import {
-  listarFuncionarios,
-  listarCompensaciones,
-  listarNotificaciones,
-  marcarNotificacionesLeidas,
-  buscarUsuario,
-  nombreCompleto,
-} from "../services/store.js";
+import Funcionario from "../models/Funcionario.js";
+import Registro, { NOMBRES_TIPO, NOMBRES_ESTADO } from "../models/Registro.js";
+import { avanceEquipo, historialFuncionario, vencerRegistros } from "../services/horas.js";
+import { resumen } from "../services/reglas.js";
+import { ahora, partesBogota, calendarioMes, fechaLegible } from "../services/tiempo.js";
 import { generarReportePDF } from "../services/reporte.js";
-import { resumenUsuario, calendarioMes, fechaLarga } from "../services/compensacion.js";
-import { TIPOS_COMPENSACION, HORAS_REQUERIDAS } from "../config/config.js";
 
-function funcionariosConResumen() {
-  return listarFuncionarios().map((f) => ({
-    ...f,
-    nombreCompleto: nombreCompleto(f),
-    resumen: resumenUsuario(f.cedula),
-  }));
+// Filtros del panel y del reporte: ?turno=1|2|3|sin y ?estado=completo|progreso
+function leerFiltros(query) {
+  const turno = ["1", "2", "3", "sin"].includes(query.turno) ? query.turno : "";
+  const estado = ["completo", "progreso"].includes(query.estado) ? query.estado : "";
+  return { turno, estado };
 }
 
-export function dashboard(req, res) {
-  const funcionarios = funcionariosConResumen();
-  const notificaciones = listarNotificaciones();
+async function equipoFiltrado({ turno, estado }) {
+  const opciones = turno === "" ? {} : { turno: turno === "sin" ? null : Number(turno) };
+  let lista = await avanceEquipo(opciones);
+  if (estado === "completo") lista = lista.filter((f) => f.restantes === 0);
+  if (estado === "progreso") lista = lista.filter((f) => f.restantes > 0);
+  return lista;
+}
+
+export async function dashboard(req, res) {
+  const filtros = leerFiltros(req.query);
+  const funcionarios = await equipoFiltrado(filtros);
   res.render("admin/dashboard", {
     titulo: "Dashboard",
     funcionarios,
-    totalCompensadas: funcionarios.reduce((s, f) => s + f.resumen.compensadas, 0),
-    enCurso: listarCompensaciones().filter((c) => c.estado === "en_curso").length,
-    notificaciones: notificaciones.slice(0, 6),
-    sinLeer: notificaciones.filter((n) => !n.leida).length,
-    requeridas: HORAS_REQUERIDAS,
+    filtros,
+    totalCompensadas: funcionarios.reduce((s, f) => s + f.compensadas, 0),
+    enCurso: funcionarios.filter((f) => f.enCurso).length,
+    sinFinalizar: funcionarios.reduce((s, f) => s + f.sinFinalizar, 0),
   });
 }
 
-export function registros(req, res) {
-  const filtro = req.query.cedula || "";
-  const funcionarios = funcionariosConResumen();
-  const nombres = Object.fromEntries(funcionarios.map((f) => [f.cedula, f.nombreCompleto]));
-  const registros = listarCompensaciones()
-    .filter((c) => !filtro || c.cedula === filtro)
-    .map((c) => ({ ...c, nombreCompleto: nombres[c.cedula] || c.nombre }))
-    .sort((a, b) => b.inicio.localeCompare(a.inicio));
+export async function registros(req, res) {
+  const filtro = String(req.query.cedula || "");
+  await vencerRegistros();
+  const [funcionarios, lista] = await Promise.all([
+    Funcionario.find({ rol: "funcionario" }, { nombre: 1, turno: 1 }).sort({ nombre: 1 }).lean(),
+    Registro.find(filtro ? { funcionario: filtro } : {}).sort({ inicio: -1 }).lean(),
+  ]);
+  const nombres = Object.fromEntries(funcionarios.map((f) => [f._id, f.nombre]));
   res.render("admin/registros", {
     titulo: "Registros",
-    registros,
+    registros: lista.map((r) => ({ ...r, nombre: nombres[r.funcionario] ?? r.funcionario })),
     funcionarios,
     filtro,
-    tipos: TIPOS_COMPENSACION,
-    fechaLarga,
+    tipos: NOMBRES_TIPO,
+    estados: NOMBRES_ESTADO,
+    fechaLegible,
   });
 }
 
-export function detalleFuncionario(req, res, next) {
-  const funcionario = buscarUsuario(req.params.cedula);
+export async function detalleFuncionario(req, res, next) {
+  const funcionario = await Funcionario.findById(String(req.params.cedula)).lean();
   if (!funcionario || funcionario.rol === "admin") return next();
+  const instante = ahora();
+  const historial = await historialFuncionario(funcionario._id, instante);
   res.render("admin/funcionario", {
-    titulo: nombreCompleto(funcionario),
-    funcionario: { ...funcionario, nombreCompleto: nombreCompleto(funcionario) },
-    resumen: resumenUsuario(funcionario.cedula),
-    calendario: calendarioMes(),
-    tipos: TIPOS_COMPENSACION,
-    fechaLarga,
+    titulo: funcionario.nombre,
+    funcionario,
+    resumen: resumen(funcionario, historial, instante),
+    calendario: calendarioMes(instante),
+    tipos: NOMBRES_TIPO,
+    estados: NOMBRES_ESTADO,
+    fechaLegible,
   });
 }
 
-export function notificaciones(req, res) {
-  const lista = listarNotificaciones();
-  marcarNotificacionesLeidas();
-  res.render("admin/notificaciones", { titulo: "Notificaciones", notificaciones: lista });
-}
-
-export function reporte(req, res) {
-  const nombreArchivo = `reporte-horas-compensacion-${new Date().toISOString().slice(0, 10)}.pdf`;
+export async function reporte(req, res) {
+  const filtros = leerFiltros(req.query);
+  const funcionarios = await equipoFiltrado(filtros);
+  const nombreArchivo = `reporte-horas-compensacion-${partesBogota(ahora()).fecha}.pdf`;
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename="${nombreArchivo}"`);
-  generarReportePDF(funcionariosConResumen(), res);
+  generarReportePDF(funcionarios, res);
 }

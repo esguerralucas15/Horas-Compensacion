@@ -69,6 +69,30 @@ export function fechaLegible(fecha) {
   return `${DIAS[(diaUTC + 6) % 7]} ${d} de ${MESES[m - 1]}`;
 }
 
+// Semanas (domingo a sábado) del mes de un instante, en hora de Bogotá,
+// para el calendario del dashboard.
+export function calendarioMes(instante) {
+  const hoy = partesBogota(instante).fecha;
+  const [y, m] = hoy.split("-").map(Number);
+  const primero = new Date(Date.UTC(y, m - 1, 1));
+  const d = new Date(Date.UTC(y, m - 1, 1 - primero.getUTCDay()));
+  const semanas = [];
+  do {
+    const semana = [];
+    for (let i = 0; i < 7; i++) {
+      semana.push({
+        dia: d.getUTCDate(),
+        iso: d.toISOString().slice(0, 10),
+        delMes: d.getUTCMonth() === m - 1,
+      });
+      d.setUTCDate(d.getUTCDate() + 1);
+    }
+    semanas.push(semana);
+  } while (d.getUTCMonth() === m - 1);
+  const mes = MESES[m - 1];
+  return { mes: mes[0].toUpperCase() + mes.slice(1), anio: y, semanas, hoy };
+}
+
 // ---------------------------------------------------------------------------
 // Reloj de la aplicación. En pruebas se puede simular la fecha y hora con la
 // variable RELOJ_PRUEBA="2026-10-13T16:35" (hora de Bogotá): el reloj arranca

@@ -183,3 +183,20 @@ test("resumen suma solo finalizados y no pasa de las horas requeridas", () => {
   assert.equal(resumen(ANGELA, muchas).compensadas, 34);
   assert.equal(resumen(ANGELA, muchas).porcentaje, 100);
 });
+
+test("los motivos que terminan en una hora no quedan con doble punto", () => {
+  const motivos = [
+    hora(ANGELA, en("2026-10-13", "16:20")).motivo,
+    hora(ANGELA, en("2026-10-13", "16:50")).motivo,
+    hora(ANGELA, en("2026-10-13", "16:35")).motivo,
+    sabado(MONICA, en("2026-10-31", "07:05")).motivo,
+    evaluarFinalizar({
+      registro: registro({ estado: "en_curso", finProgramado: en("2026-10-13", "17:30"), limiteFinalizar: en("2026-10-13", "17:45") }),
+      ahora: en("2026-10-13", "17:00"),
+    }).motivo,
+  ];
+  assert.equal(motivos[0], "La franja abre hoy a las 4:30 p.m.");
+  assert.equal(motivos[4], "Podrás finalizar a las 5:30 p.m.");
+  assert.equal(motivos[3], "Puedes iniciar. Finalizas a las 12:00 m.");
+  for (const m of motivos) assert.doesNotMatch(m, /\.\.$/);
+});

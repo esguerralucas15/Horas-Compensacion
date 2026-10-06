@@ -19,7 +19,10 @@ import {
   fechaLegible,
 } from "./tiempo.js";
 
-const no = (codigo, motivo, extra = {}) => ({ permitido: false, codigo, motivo, ...extra });
+// Las horas legibles ya terminan en punto ("5:30 p.m."): se evita "p.m.."
+const frase = (texto) => texto.replace(/\.\.$/, ".");
+
+const no = (codigo, motivo, extra = {}) => ({ permitido: false, codigo, motivo: frase(motivo), ...extra });
 
 // Un registro en curso cuyo plazo para finalizar ya pasó cuenta como sin_finalizar,
 // aunque todavía no se haya actualizado en la base.
@@ -95,7 +98,7 @@ export function evaluarHora({ config, funcionario, registros = [], ahora }) {
   return {
     permitido: true,
     codigo: "OK",
-    motivo: `Puedes iniciar. Finalizas a las ${horaLegible(ha.horaFin)}.`,
+    motivo: frase(`Puedes iniciar. Finalizas a las ${horaLegible(ha.horaFin)}.`),
     programacion: {
       tipo: "hora",
       fecha,
@@ -151,7 +154,7 @@ export function evaluarSabado({ config, funcionario, registros = [], ahora }) {
   return {
     permitido: true,
     codigo: "OK",
-    motivo: `Puedes iniciar. Finalizas a las ${horaLegible(sabado.horaFin)}.`,
+    motivo: frase(`Puedes iniciar. Finalizas a las ${horaLegible(sabado.horaFin)}.`),
     programacion: {
       tipo: "sabado",
       fecha,

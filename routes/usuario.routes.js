@@ -8,7 +8,6 @@ router.use(requiereSesion, soloUsuario);
 router.get("/", (req, res) => res.redirect("/usuario/dashboard"));
 router.get("/dashboard", usuario.dashboard);
 router.get("/sabados", usuario.sabados);
-router.post("/sabados", usuario.seleccionarSabado);
 router.get("/compensacion/inicio", usuario.inicio);
 router.post("/compensacion/iniciar", usuario.iniciar);
 router.get("/compensacion/temporizador", usuario.temporizador);

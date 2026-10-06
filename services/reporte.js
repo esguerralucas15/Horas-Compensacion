@@ -10,11 +10,11 @@ const GRIS = "#6b6b6b";
 const GRIS_LINEA = "#e2e2e2";
 
 const COLUMNAS = [
-  { titulo: "Nombre y Apellido", ancho: 160, valor: (f) => f.nombreCompleto },
-  { titulo: "Cédula", ancho: 90, valor: (f) => f.cedula },
-  { titulo: "Horas compensadas", ancho: 100, valor: (f) => `${f.resumen.compensadas} h`, alinear: "center" },
-  { titulo: "Horas restantes", ancho: 90, valor: (f) => `${f.resumen.restantes} h`, alinear: "center" },
-  { titulo: "Avance", ancho: 72, valor: (f) => `${f.resumen.porcentaje}%`, alinear: "center" },
+  { titulo: "Nombre y Apellido", ancho: 160, valor: (f) => f.nombre },
+  { titulo: "Cédula", ancho: 90, valor: (f) => f._id },
+  { titulo: "Horas compensadas", ancho: 100, valor: (f) => `${f.compensadas} h`, alinear: "center" },
+  { titulo: "Horas restantes", ancho: 90, valor: (f) => `${f.restantes} h`, alinear: "center" },
+  { titulo: "Avance", ancho: 72, valor: (f) => `${f.porcentaje}%`, alinear: "center" },
 ];
 
 export function generarReportePDF(funcionarios, salida) {
@@ -37,7 +37,7 @@ export function generarReportePDF(funcionarios, salida) {
   doc.moveTo(izq, 118).lineTo(izq + anchoUtil, 118).strokeColor(ROJO).lineWidth(2).stroke();
 
   // Resumen
-  const total = funcionarios.reduce((s, f) => s + f.resumen.compensadas, 0);
+  const total = funcionarios.reduce((s, f) => s + f.compensadas, 0);
   doc.font("Narrow-Bold").fontSize(13).fillColor(GRIS).text("Horas compensadas por el equipo", izq, 134);
   doc.fontSize(28).fillColor(DORADO).text(`${total} Horas`, izq, 150);
   doc.font("Narrow").fontSize(11).fillColor(GRIS)
