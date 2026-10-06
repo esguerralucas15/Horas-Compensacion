@@ -3,6 +3,7 @@ import { join } from "path";
 
 import appRouter from "./routes/router.js";
 import sesion from "./config/session.js";
+import { conectarDB } from "./config/db.js";
 import { PORT } from "./config/config.js";
 import { variablesVista } from "./middlewares/auth.js";
 import { noEncontrado, manejadorErrores } from "./middlewares/errores.js";
@@ -22,6 +23,13 @@ app.use("/", appRouter);
 app.use(noEncontrado);
 app.use(manejadorErrores);
 
-app.listen(PORT, () => {
-  console.log(`Server running 🚀 at http://localhost:${PORT}`);
-});
+// Primero se conecta a MongoDB; si falla, el servidor no arranca
+try {
+  await conectarDB();
+  app.listen(PORT, () => {
+    console.log(`Server running 🚀 at http://localhost:${PORT}`);
+  });
+} catch (err) {
+  console.error("No se pudo conectar a MongoDB:", err.message);
+  process.exit(1);
+}

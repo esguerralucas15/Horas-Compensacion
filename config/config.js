@@ -1,11 +1,36 @@
-// Configuración general de la aplicación
+// Configuración general de la aplicación.
+// Los valores sensibles se leen del archivo .env (ver .env.example).
+import "dotenv/config";
+
 export const PORT = process.env.PORT || 3000;
+
+// Cadena de conexión a MongoDB Atlas (base horas_compensacion)
+export const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI || MONGODB_URI.includes("<")) {
+  throw new Error(
+    "Falta MONGODB_URI en el archivo .env (copia .env.example y pon el usuario y la clave de Atlas)."
+  );
+}
+
+export const SESSION_SECRET = process.env.SESSION_SECRET;
+if (!SESSION_SECRET) {
+  throw new Error("Falta SESSION_SECRET en el archivo .env.");
+}
+
+// _id del documento de la colección configuracion con las reglas de la circular
+export const CONFIG_ID = "fin-anio-2026";
+
+// Zona horaria en la que se calculan todas las fechas y horas
+export const ZONA_HORARIA = "America/Bogota";
+
+// ---------------------------------------------------------------------------
+// TEMPORAL: constantes que todavía usan los controladores y servicios basados
+// en archivos JSON. En los pasos 3 y 4 se reemplazan por la colección
+// configuracion y por el rol guardado en funcionarios, y se eliminan de aquí.
+// ---------------------------------------------------------------------------
 
 // Única cédula con acceso a las páginas de administrador
 export const CEDULA_ADMIN = "1000000100";
-
-export const SESSION_SECRET =
-  process.env.SESSION_SECRET || "horas-compensacion-sed-secret";
 
 // Total de horas que cada funcionario debe compensar para el descanso de diciembre
 export const HORAS_REQUERIDAS = 34;
