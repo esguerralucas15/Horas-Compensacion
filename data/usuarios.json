@@ -1,6 +1,0 @@
-[
-  { "cedula": "1000000100", "nombre": "Administradora", "apellido": "", "rol": "admin", "area": "Contabilidad" },
-  { "cedula": "1012345678", "nombre": "Lucas", "apellido": "Martínez", "rol": "usuario", "area": "Contabilidad" },
-  { "cedula": "1023456789", "nombre": "María", "apellido": "Rodríguez", "rol": "usuario", "area": "Contabilidad" },
-  { "cedula": "79876543", "nombre": "Andrés", "apellido": "Gómez", "rol": "usuario", "area": "Contabilidad" }
-]

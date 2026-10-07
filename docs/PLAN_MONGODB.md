@@ -64,7 +64,7 @@ Solo 3 personas tienen sábados: Claribel (10 y 24-oct, 8,5 h), Mónica Varón (
 ```
 Las horas se copian al crear el registro y **no** se recalculan desde la configuración (auditoría).
 
-**`sessions`** — la creará connect-mongo (paso 4).
+**`sessions`** — la crea connect-mongo (paso 4). Reutiliza la conexión de Mongoose (`clientPromise`) en lugar de `mongoUrl`: con dos conexiones simultáneas el DNS a veces rechazaba una consulta SRV (`querySrv EREFUSED`).
 
 ### Índices
 
@@ -85,9 +85,13 @@ No uses `syncIndexes()` (borra índices). Después del primer `npm run dev` veri
 |---|---|---|
 | 1 | `01b6de3`, `8fc924b` | Dependencias (`mongoose`, `connect-mongo`, `dotenv`; `nodemon` en dev), `.env.example`, `.gitignore` con `.env` y `.DS_Store`. |
 | 2 | `85abd07`, `aacd195` | `config/db.js` (`conectarDB()`), `app.js` conecta antes de `listen`, `config/config.js` lee `.env`, modelos `Funcionario`, `Registro`, `Configuracion`. |
-| 3 | (este commit) | `services/tiempo.js`, `services/reglas.js`, `services/horas.js` y pruebas en `test/` (`npm test`, 28 pruebas). |
+| 3 | `bd257ca` | `services/tiempo.js`, `services/reglas.js`, `services/horas.js` y pruebas en `test/`. |
+| 4 | `8a090c9` | Sesiones con connect-mongo y controladores sobre `services/horas.js`; sin notificaciones. |
+| 5 | `77e093b` | Vistas: botones con motivo, sábados asignados, temporizador hasta la hora fija, panel con turno y sin finalizar, PDF con turno. |
+| 6 | `45d473b`, `eb2337f` | Pruebas con `RELOJ_PRUEBA` (31 automáticas); motivo VENCIDO al finalizar tarde; aviso si el puerto está ocupado. |
+| 7 | (este commit) | Limpieza: sin `store.js`, `compensacion.js`, `data/` ni constantes TEMPORAL; README nuevo sin la cédula de la administradora. |
 
-`config/config.js` **todavía** exporta constantes viejas (`CEDULA_ADMIN`, `HORAS_REQUERIDAS`, `TIPOS_COMPENSACION`, `SABADOS_HABILITADOS`, `PERIODO_DESCANSO`) marcadas como TEMPORAL porque los controladores actuales aún usan `services/store.js` y los JSON de `data/`. Se eliminan en el paso 7.
+La migración está completa: ya no hay archivos JSON ni constantes TEMPORAL. Las secciones 4 y 5 quedan como registro de lo que se pidió en cada paso.
 
 ### API de los servicios nuevos
 
@@ -116,7 +120,7 @@ No uses `syncIndexes()` (borra índices). Después del primer `npm run dev` veri
 - `avanceEquipo({ turno })` → lista de funcionarios con `compensadas, restantes, porcentaje, sinFinalizar, enCurso` (aggregate con `$lookup`). `turno: null` = sin turno.
 - `historialFuncionario(cedula)`.
 
-## 4. Lo que falta
+## 4. Detalle de los pasos 4 a 7 (hechos)
 
 ### Paso 4 — Controladores y sesiones
 1. **`config/session.js`**: reemplazar `ArchivoStore` por `connect-mongo` (`MongoStore.create({ mongoUrl: MONGODB_URI, collectionName: "sessions", ttl: 10 * 60 * 60 })`). Mantener cookie `horas.sid`, `httpOnly`, `sameSite: "lax"`, `rolling`. Guardar en sesión solo `{ cedula, nombre, rol }`.
