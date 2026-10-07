@@ -1,4 +1,5 @@
-// Datos de prueba iguales a los de la base horas_compensacion (sin conexión)
+// Datos de prueba con la misma forma que la base horas_compensacion (sin conexión).
+// Las cédulas son inventadas: el repositorio es público.
 import { aFechaHora } from "../services/tiempo.js";
 
 export const CONFIG = {

@@ -32,7 +32,7 @@ Explicación detallada de la base (con diagrama): https://claude.ai/code/artifac
 | Un temporizador | Una sola compensación `en_curso` por persona. |
 | Tope | Al llegar a `horasRequeridas` ya no se puede iniciar más. El resumen nunca pasa de `horasRequeridas`. |
 | Sin finalizar | Si no presiona Finalizar antes de `limiteFinalizar`, el registro pasa a `sin_finalizar` y **no suma**. |
-| Administradora | Cédula 1000000100 (NOMBRE DE LA ADMINISTRADORA, `rol: "admin"`). Solo consulta y reportes; no registra horas ni edita registros. |
+| Administradora | La jefe de área: un documento de `funcionarios` con `rol: "admin"` (su cédula no se escribe en el repositorio, que es público). Solo consulta y reportes; no registra horas ni edita registros. |
 | Notificaciones | **Se eliminan** (la administradora solo ve avance y reportes). |
 
 ## 2. Base de datos (MongoDB Atlas)
@@ -141,7 +141,7 @@ La migración está completa: ya no hay archivos JSON ni constantes TEMPORAL. La
 - `views/usuario/sabados.ejs`: lista de sus sábados (fecha legible, horario, horas, estado). Sin selector libre.
 - `views/usuario/inicio.ejs`: textos con la franja real (4:30–5:30 p.m.; sábado según su horario y horas).
 - `views/usuario/temporizador.ejs` + `public/js/temporizador.js`: cuenta regresiva hasta `finProgramado` (ya no `inicio + duración`); habilita Finalizar al llegar; después de `limiteFinalizar` muestra "plazo vencido" y deshabilita. Mantener la corrección de desfase servidor/navegador (`data-ahora`).
-- `views/admin/dashboard.ejs`: saludo con `usuario.nombre` (hoy dice "Bienvenida" fijo); columnas Turno y Sin finalizar; filtros; quitar la tarjeta de notificaciones (puede reemplazarse por "Registros sin finalizar" o "En curso ahora").
+- `views/admin/dashboard.ejs`: saludo con `usuario.nombre` (antes tenía un saludo fijo); columnas Turno y Sin finalizar; filtros; quitar la tarjeta de notificaciones (puede reemplazarse por "Registros sin finalizar" o "En curso ahora").
 - `views/admin/registros.ejs` y `funcionario.ejs`: horas desde `registro.horas` (no desde la configuración), nombres de tipo `{ hora: "Hora adicional", sabado: "Sábado" }`, estados `en_curso / finalizado / sin_finalizar`.
 - `services/reporte.js`: columna Turno; texto "horas requeridas según jornada" (no siempre 34).
 - `views/partials/sidebar.ejs`: quitar el enlace a Notificaciones. Borrar `views/admin/notificaciones.ejs`.
@@ -164,7 +164,6 @@ La migración está completa: ya no hay archivos JSON ni constantes TEMPORAL. La
 - Gracia de 15 min (iniciar y finalizar).
 - Horario de sábado 7:00 a.m.–4:30 p.m. con 8,5 h; el de María Francisca 7:00–2:30 p.m. (6,5 h).
 - Modalidad de Nubia Cascante, Rossmary del Busto y Yully Prieto (se asumió hora adicional).
-- Nombre de la administradora: el del Excel vs el de la base vieja.
 
 ## 6. Fechas clave
 - **Sábado 10-oct-2026:** primer sábado habilitado (Claribel, Mónica, María Francisca). Si la app no está lista, se anota en planilla manual y luego se cargan los registros.
