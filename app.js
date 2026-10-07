@@ -26,7 +26,14 @@ app.use(manejadorErrores);
 // Primero se conecta a MongoDB; si falla, el servidor no arranca
 try {
   await conectarDB();
-  app.listen(PORT, () => {
+  // En Express 5 el error de listen (p. ej. puerto ocupado) llega a este callback
+  app.listen(PORT, (err) => {
+    if (err) {
+      console.error(
+        `No se pudo iniciar el servidor en el puerto ${PORT}: ${err.code === "EADDRINUSE" ? "el puerto ya está en uso (¿hay otro servidor abierto?)" : err.message}`
+      );
+      process.exit(1);
+    }
     console.log(`Server running 🚀 at http://localhost:${PORT}`);
   });
 } catch (err) {
