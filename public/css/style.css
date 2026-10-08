@@ -152,7 +152,7 @@ p { margin: 0; }
   z-index: 30;
   height: var(--header-alto);
   display: grid;
-  grid-template-columns: 60px 1fr 60px;
+  grid-template-columns: 60px minmax(0, 1fr) 60px;
   align-items: center;
   padding: 0 18px;
   background: var(--blanco);
@@ -164,7 +164,7 @@ p { margin: 0; }
   padding: 2px 0; border: 0; background: none; cursor: pointer;
 }
 .topbar__menu span { display: block; height: 2.5px; border-radius: 2px; background: #222; }
-.topbar__titulo { margin: 0; text-align: center; font-size: 34px; font-weight: 700; }
+.topbar__titulo { margin: 0; text-align: center; font-size: 34px; font-weight: 700; line-height: 1.1; text-wrap: balance; }
 .topbar__logo { justify-self: end; width: 40px; height: auto; }
 
 .app__cuerpo { display: flex; min-height: calc(100vh - var(--header-alto)); }
@@ -372,6 +372,7 @@ p { margin: 0; }
 }
 
 @media (max-width: 640px) {
+  .topbar__titulo { font-size: 21px; }
   .btn { min-width: 0; width: 100%; max-width: 305px; height: 64px; font-size: 26px; }
   .btn--finalizar { max-width: 350px; }
   .encabezado__titulo, .sabados__titulo { font-size: 38px; }

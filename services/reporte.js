@@ -41,7 +41,7 @@ export function generarReportePDF(funcionarios, salida, { filtro = "" } = {}) {
 
   // Encabezado
   doc.image(join(RAIZ, "public/img/logo.png"), doc.page.width - izq - 32, 40, { width: 32 });
-  doc.font("Narrow-Bold").fontSize(24).fillColor("#000").text("Área de Contabilidad", izq, 48);
+  doc.font("Narrow-Bold").fontSize(24).fillColor("#000").text("Área de Tesorería y Contabilidad", izq, 48);
   doc.font("Narrow").fontSize(14).fillColor(GRIS)
     .text("Reporte de horas de compensación — descanso de fin de año (diciembre 2026 – enero 2027)");
   doc.fontSize(11).text(`Generado el ${momentoLegible(ahora())}${filtro ? ` · Filtro: ${filtro}` : ""}`);

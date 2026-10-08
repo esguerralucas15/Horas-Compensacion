@@ -1,7 +1,7 @@
 {
   "name": "horascompensacion",
   "version": "1.0.0",
-  "description": "Control de horas de compensación - Secretaría de Educación, área de Contabilidad",
+  "description": "Control de horas de compensación - Secretaría de Educación, área de Tesorería y Contabilidad",
   "main": "index.js",
   "scripts": {
     "test": "node --test",

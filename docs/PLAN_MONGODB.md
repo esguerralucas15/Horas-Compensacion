@@ -8,7 +8,7 @@ Explicación detallada de la base (con diagrama): https://claude.ai/code/artifac
 
 ## 0. Contexto y reglas de trabajo
 
-- **Qué es:** página web de la Secretaría de Educación, área de Contabilidad, para registrar las horas de compensación de la **Circular N° 10 del 25 de septiembre de 2026** (descanso de fin de año, diciembre 2026 – enero 2027). Funciona como una **planilla**: cada persona entra solo con su cédula, registra su hora o su sábado y la aplicación suma hasta completar sus horas. La jefe de área (administradora) solo consulta el avance y genera reportes.
+- **Qué es:** página web de la Secretaría de Educación, área de Tesorería y Contabilidad, para registrar las horas de compensación de la **Circular N° 10 del 25 de septiembre de 2026** (descanso de fin de año, diciembre 2026 – enero 2027). Funciona como una **planilla**: cada persona entra solo con su cédula, registra su hora o su sábado y la aplicación suma hasta completar sus horas. La jefe de área (administradora) solo consulta el avance y genera reportes.
 - **Stack:** Node.js (ES Modules), Express 5, EJS, express-session, pdfkit, Mongoose 8, connect-mongo 5, dotenv.
 - **Rama de trabajo:** `Lucas-Esguerra`. **No tocar `main`. No hacer push sin que el usuario lo pida.**
 - **Para revertir:** existe la etiqueta `antes-mongodb` (estado previo a la migración): `git reset --hard antes-mongodb`.

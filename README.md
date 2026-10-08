@@ -1,5 +1,5 @@
 # Horas Compensación
-Página web para el control de las horas de compensación de la Secretaría de Educación, área de Contabilidad
+Página web para el control de las horas de compensación de la Secretaría de Educación, área de Tesorería y Contabilidad
 (Circular N° 10 de 2026, descanso de fin de año). Funciona como una planilla: cada persona entra con su cédula,
 registra su hora adicional o su sábado y la aplicación suma hasta completar sus horas. La jefe de área consulta
 el avance y genera el reporte PDF.
