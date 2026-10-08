@@ -5,7 +5,10 @@ export function mostrarLogin(req, res) {
 }
 
 export async function iniciarSesion(req, res, next) {
-  const cedula = String(req.body.cedula || "").replace(/\D/g, "");
+  const escrito = String(req.body.cedula || "").trim();
+  const cedula = escrito.replace(/\D/g, "");
+  // La administradora entra con su cédula seguida de @ (p. ej. 12345678@)
+  const conArroba = escrito.endsWith("@");
 
   if (!cedula) {
     return res.status(400).render("auth/login", {
@@ -17,7 +20,8 @@ export async function iniciarSesion(req, res, next) {
 
   // Solo entran las personas activas en la colección funcionarios
   const registrado = await Funcionario.findOne({ _id: cedula, activo: true }).lean();
-  if (!registrado) {
+  // Sin la @ la cédula de la administradora responde igual que una no registrada
+  if (!registrado || (registrado.rol === "admin" && !conArroba)) {
     return res.status(401).render("auth/login", {
       titulo: "Orientaciones Descanso Compensado",
       error: "El número de identificación no está registrado",

@@ -66,6 +66,7 @@ Para las pruebas se usa un funcionario temporal (no personas reales) y después 
 
 - Se entra solo con la cédula. Debe existir en la colección `funcionarios` con `activo: true`.
 - El rol sale del documento: `funcionario` → páginas `/usuario/...`; `admin` → páginas `/admin/...`.
+- La administradora escribe su cédula seguida de `@` (por ejemplo `12345678@`); solo con la cédula no entra.
 
 ## Reglas principales
 
