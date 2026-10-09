@@ -1,0 +1,19 @@
+# Configuración de despliegue en Render (https://render.com).
+# Las variables con sync: false se escriben a mano en el panel de Render;
+# nunca se guardan en el repositorio.
+services:
+  - type: web
+    name: horas-compensacion
+    runtime: node
+    plan: free
+    region: ohio
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /salud
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: SESSION_SECRET
+        sync: false

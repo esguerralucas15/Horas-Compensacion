@@ -100,7 +100,9 @@ export function calendarioMes(instante) {
 // ---------------------------------------------------------------------------
 const ARRANQUE = Date.now();
 let base = null;
-if (process.env.RELOJ_PRUEBA) {
+if (process.env.RELOJ_PRUEBA && process.env.NODE_ENV === "production") {
+  console.warn("RELOJ_PRUEBA se ignora en producción: se usa la hora real.");
+} else if (process.env.RELOJ_PRUEBA) {
   const [fecha, hora] = process.env.RELOJ_PRUEBA.split("T");
   base = aFechaHora(fecha, hora.slice(0, 5));
   console.warn(`RELOJ_PRUEBA activo: la aplicación cree que son las ${hora} del ${fecha} (Bogotá)`);

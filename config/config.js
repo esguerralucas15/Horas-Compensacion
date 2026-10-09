@@ -4,6 +4,9 @@ import "dotenv/config";
 
 export const PORT = process.env.PORT || 3000;
 
+// En Render (o cualquier servidor) se define NODE_ENV=production
+export const EN_PRODUCCION = process.env.NODE_ENV === "production";
+
 // Cadena de conexión a MongoDB Atlas (base horas_compensacion)
 export const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI || MONGODB_URI.includes("<")) {

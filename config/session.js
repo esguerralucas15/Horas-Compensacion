@@ -1,7 +1,7 @@
 import session from "express-session";
 import mongoose from "mongoose";
 import MongoStore from "connect-mongo";
-import { SESSION_SECRET } from "./config.js";
+import { SESSION_SECRET, EN_PRODUCCION } from "./config.js";
 
 const DURACION_SESION_SEG = 10 * 60 * 60; // 10 horas: cubre una jornada completa de sábado
 
@@ -26,6 +26,8 @@ export default session({
   cookie: {
     httpOnly: true,
     sameSite: "lax",
+    // En producción la página va por HTTPS: la cookie solo viaja cifrada
+    secure: EN_PRODUCCION,
     maxAge: DURACION_SESION_SEG * 1000,
   },
 });

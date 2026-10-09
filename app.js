@@ -4,7 +4,8 @@ import { join } from "path";
 import appRouter from "./routes/router.js";
 import sesion from "./config/session.js";
 import { conectarDB } from "./config/db.js";
-import { PORT } from "./config/config.js";
+import mongoose from "mongoose";
+import { PORT, EN_PRODUCCION } from "./config/config.js";
 import { variablesVista } from "./middlewares/auth.js";
 import { noEncontrado, manejadorErrores } from "./middlewares/errores.js";
 
@@ -12,6 +13,17 @@ const app = express();
 
 app.set("view engine", "ejs");
 app.set("views", join(import.meta.dirname, "views"));
+
+// Render (y otros servicios) ponen un proxy HTTPS delante de la aplicación:
+// sin esto la cookie segura de la sesión no se enviaría.
+if (EN_PRODUCCION) app.set("trust proxy", 1);
+
+// Ruta de salud para el "despertador" (cron-job.org) y para Render.
+// Va antes de la sesión para no crear sesiones con cada visita automática.
+app.get("/salud", (req, res) => {
+  const mongoOk = mongoose.connection.readyState === 1;
+  res.status(mongoOk ? 200 : 503).json({ estado: mongoOk ? "ok" : "sin-conexion-mongo" });
+});
 
 app.use(express.static(join(import.meta.dirname, "public")));
 app.use(express.urlencoded({ extended: false }));
