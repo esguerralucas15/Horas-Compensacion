@@ -83,7 +83,7 @@ Para las pruebas se usa un funcionario temporal (no personas reales) y después 
 Las fechas, franjas, festivos y sábados habilitados están en el documento `fin-anio-2026` de la colección
 `configuracion`. Todas las horas se calculan en hora de Bogotá (`services/tiempo.js`).
 
-El detalle de las reglas, la estructura de la base y los índices está en [docs/PLAN_MONGODB.md](docs/PLAN_MONGODB.md).
+Los pasos para publicar la aplicación en Render están en [docs/DESPLIEGUE_RENDER.md](docs/DESPLIEGUE_RENDER.md).
 
 ## Rutas
 
@@ -115,5 +115,5 @@ routes/                Rutas (auth, usuario, admin)
 views/                 auth, usuario, admin, partials, errores (EJS)
 public/                css, js, img
 test/                  Pruebas de reglas y tiempo (node --test)
-docs/                  Plan de la migración a MongoDB
+docs/                  Guía de despliegue en Render
 ```
